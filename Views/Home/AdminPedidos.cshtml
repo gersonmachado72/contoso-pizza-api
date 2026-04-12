@@ -1,0 +1,130 @@
+@using ContosoPizza.Models
+@model List<Pedido>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gerenciar Pedidos | ContosoPizza</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+        }
+        
+        .pedido-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #e67e22;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .status-Preparando { background: #f39c12; color: white; }
+        .status-Saiu_para_entrega { background: #3498db; color: white; }
+        .status-Finalizado { background: #27ae60; color: white; }
+        
+        select.status-select {
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        
+        .btn-voltar-admin {
+            display: inline-block;
+            background: #e67e22;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        
+        .btn-voltar-admin:hover { background: #d35400; }
+        
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .itens-lista {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .total { font-size: 1.2rem; font-weight: bold; color: #e67e22; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <a href="/Home/Index" class="btn-voltar-admin">← Voltar ao Cardápio</a>
+        <h1>📊 Gerenciamento de Pedidos</h1>
+        <p>Total de pedidos: @Model.Count</p>
+        
+        @if (!Model.Any())
+        {
+            <p>Nenhum pedido realizado ainda.</p>
+        }
+        
+        @foreach (var pedido in Model)
+        {
+            <div class="pedido-card">
+                <div class="pedido-header">
+                    <div>
+                        <strong>Pedido #@pedido.Id</strong><br>
+                        <strong>Cliente:</strong> @pedido.NomeCliente<br>
+                        <strong>Telefone:</strong> @pedido.Telefone<br>
+                        <strong>Endereço:</strong> @pedido.Endereco<br>
+                        <strong>Data:</strong> @pedido.DataPedido.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                    <div>
+                        <form method="post" action="/Home/AtualizarStatus">
+                            <input type="hidden" name="id" value="@pedido.Id" />
+                            <select name="status" class="status-select" onchange="this.form.submit()">
+                                <option value="Preparando" @(pedido.Status == "Preparando" ? "selected" : "")>🔧 Preparando</option>
+                                <option value="Saiu para entrega" @(pedido.Status == "Saiu para entrega" ? "selected" : "")>🚚 Saiu para entrega</option>
+                                <option value="Finalizado" @(pedido.Status == "Finalizado" ? "selected" : "")>✅ Finalizado</option>
+                            </select>
+                        </form>
+                        <div class="status status-@(pedido.Status?.Replace(" ", "_"))">
+                            @pedido.Status
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="itens-lista">
+                    <strong>📋 Itens do pedido:</strong>
+                    <ul>
+                        @foreach (var item in pedido.Itens)
+                        {
+                            <li>@item.Quantidade x Pizza @item.Sabor (tamanho @item.Tamanho) - R$ @item.Subtotal.ToString("F2")</li>
+                        }
+                    </ul>
+                    <div class="total">💰 Total: R$ @pedido.ValorTotal.ToString("F2")</div>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>

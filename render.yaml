@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: contoso-pizza-api
+    runtime: dotnet
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: cd out && dotnet ContosoPizza.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+    plan: free

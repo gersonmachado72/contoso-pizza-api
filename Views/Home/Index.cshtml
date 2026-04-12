@@ -1,0 +1,94 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContosoPizza - A Melhor Pizzaria</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Cabeçalho com imagem cabecalho.jpg -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="site-name">
+                <span>🍕</span> ContosoPizza
+            </div>
+            <div class="logo-area">
+                <img src="/images/logo.jpg" alt="Logo ContosoPizza" class="logo-img">
+                <span class="site-title">Qualidade que dá gosto!</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Seção Cardápio -->
+        <section class="cardapio">
+            <h2>📋 Nosso Cardápio Especial</h2>
+            <div id="pizzas-list" class="pizzas-grid">
+                <div class="pizza-card">Carregando cardápio...</div>
+            </div>
+        </section>
+
+        <!-- Seção Pedido -->
+        <section class="pedido-form">
+            <h2>📝 Monte seu Pedido</h2>
+            <form id="pedidoForm">
+                <div class="form-group">
+                    <label>👤 Seu nome completo:</label>
+                    <input type="text" id="nomeCliente" placeholder="Ex: João Silva" required>
+                </div>
+                <div class="form-group">
+                    <label>📍 Endereço para entrega:</label>
+                    <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade" required>
+                </div>
+                <div class="form-group">
+                    <label>📞 Telefone para contato:</label>
+                    <input type="tel" id="telefone" placeholder="(00) 00000-0000" required>
+                </div>
+
+                <h3 style="margin: 20px 0 10px 0;">🍕 Adicione pizzas ao pedido</h3>
+                <div id="itensPedido"></div>
+                <button type="button" class="btn-adicionar" onclick="adicionarItem()">+ Adicionar pizza</button>
+
+                <div style="text-align: center;">
+                    <button type="submit" class="btn-enviar">✅ Finalizar Pedido</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script src="/js/pedido.js"></script>
+    <script>
+        // Carregar pizzas da API
+        fetch('/pizza')
+            .then(res => res.json())
+            .then(pizzas => {
+                const container = document.getElementById('pizzas-list');
+                container.innerHTML = '';
+                pizzas.forEach(pizza => {
+                    const card = document.createElement('div');
+                    card.className = 'pizza-card';
+                    card.innerHTML = `
+                        <h3>${pizza.name}</h3>
+                        <div class="price">R$ ${pizza.price.toFixed(2)}</div>
+                        <div class="badge">${pizza.isVegetarian ? '🌱 Vegetariana' : '🍖 Tradicional'}</div>
+                    `;
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => {
+                document.getElementById('pizzas-list').innerHTML = '<div class="pizza-card">Erro ao carregar cardápio. Tente novamente.</div>';
+            });
+    </script>
+</body>
+</html>
+
+<!-- Adicionar no final do container, antes de fechar </div> -->
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/Home/AdminPedidos" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; display: inline-block;">
+        📊 Admin - Gerenciar Pedidos
+    </a>
+</div>
