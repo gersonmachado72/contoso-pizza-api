@@ -1,0 +1,9 @@
+bin/
+obj/
+out/
+publish/
+.git/
+.vscode/
+*.db
+*.db-shm
+*.db-wal
