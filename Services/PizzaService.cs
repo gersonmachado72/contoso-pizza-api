@@ -1,57 +1,71 @@
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ContosoPizza.Models;
+using ContosoPizza.Data;
 
 namespace ContosoPizza.Services;
 
 public static class PizzaService
 {
-    private static List<Pizza> _pizzas = new()
+    private static AppDbContext? _context;
+
+    public static void Initialize(AppDbContext context)
     {
-        new Pizza { Id = 1, Name = "Margherita", Price = 9.99M, IsVegetarian = true },
-        new Pizza { Id = 2, Name = "Pepperoni", Price = 12.99M, IsVegetarian = false },
-        new Pizza { Id = 3, Name = "Quattro Formaggi", Price = 14.99M, IsVegetarian = true },
-        new Pizza { Id = 4, Name = "Calabresa", Price = 11.99M, IsVegetarian = false },
-        new Pizza { Id = 5, Name = "Portuguesa", Price = 13.99M, IsVegetarian = false },
-        new Pizza { Id = 6, Name = "Frango com Catupiry", Price = 14.99M, IsVegetarian = false },
-        new Pizza { Id = 7, Name = "Vegetariana Especial", Price = 15.99M, IsVegetarian = true },
-        new Pizza { Id = 8, Name = "Napolitana", Price = 12.99M, IsVegetarian = true },
-        new Pizza { Id = 9, Name = "Mexicana", Price = 13.99M, IsVegetarian = false },
-        new Pizza { Id = 10, Name = "Chocolate", Price = 18.99M, IsVegetarian = true }
-    };
-    private static int _nextId = 11;
+        _context = context;
+        
+        // Garantir que há pizzas no banco
+        if (_context.Pizzas != null && !_context.Pizzas.Any())
+        {
+            _context.Pizzas.AddRange(new List<Pizza>
+            {
+                new Pizza { Id = 1, Name = "Margherita", Price = 9.99M, IsVegetarian = true },
+                new Pizza { Id = 2, Name = "Pepperoni", Price = 12.99M, IsVegetarian = false },
+                new Pizza { Id = 3, Name = "Quattro Formaggi", Price = 14.99M, IsVegetarian = true },
+                new Pizza { Id = 4, Name = "Calabresa", Price = 11.99M, IsVegetarian = false },
+                new Pizza { Id = 5, Name = "Portuguesa", Price = 13.99M, IsVegetarian = false },
+                new Pizza { Id = 6, Name = "Frango com Catupiry", Price = 14.99M, IsVegetarian = false },
+                new Pizza { Id = 7, Name = "Vegetariana Especial", Price = 15.99M, IsVegetarian = true },
+                new Pizza { Id = 8, Name = "Napolitana", Price = 12.99M, IsVegetarian = true },
+                new Pizza { Id = 9, Name = "Mexicana", Price = 13.99M, IsVegetarian = false },
+                new Pizza { Id = 10, Name = "Chocolate", Price = 18.99M, IsVegetarian = true }
+            });
+            _context.SaveChanges();
+        }
+    }
 
     public static List<Pizza> GetAll()
     {
-        return _pizzas;
+        if (_context?.Pizzas == null) return new List<Pizza>();
+        return _context.Pizzas.ToList();
     }
 
     public static Pizza? Get(int id)
     {
-        return _pizzas.FirstOrDefault(p => p.Id == id);
+        if (_context?.Pizzas == null) return null;
+        return _context.Pizzas.Find(id);
     }
 
     public static void Add(Pizza pizza)
     {
-        pizza.Id = _nextId++;
-        _pizzas.Add(pizza);
+        if (_context == null) return;
+        _context.Pizzas.Add(pizza);
+        _context.SaveChanges();
     }
 
     public static void Update(Pizza pizza)
     {
-        var index = _pizzas.FindIndex(p => p.Id == pizza.Id);
-        if (index != -1)
-        {
-            _pizzas[index] = pizza;
-        }
+        if (_context == null) return;
+        _context.Pizzas.Update(pizza);
+        _context.SaveChanges();
     }
 
     public static void Delete(int id)
     {
+        if (_context == null) return;
         var pizza = Get(id);
         if (pizza != null)
         {
-            _pizzas.Remove(pizza);
+            _context.Pizzas.Remove(pizza);
+            _context.SaveChanges();
         }
     }
 }

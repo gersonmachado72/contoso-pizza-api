@@ -50,10 +50,15 @@ builder.Services.AddScoped<CloudinaryService>();
 
 var app = builder.Build();
 
+// Inicializar serviços com o DbContext
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.EnsureCreated();
+    
+    // Inicializar serviços estáticos
+    PizzaService.Initialize(dbContext);
+    PedidoService.Initialize(dbContext);
 }
 
 if (app.Environment.IsDevelopment())

@@ -1,64 +1,60 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ContosoPizza.Models;
+using ContosoPizza.Data;
 
 namespace ContosoPizza.Services;
 
 public static class PedidoService
 {
-    private static List<Pedido> _pedidos = new();
-    private static int _nextId = 1;
+    private static AppDbContext? _context;
+
+    public static void Initialize(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public static List<Pedido> GetAll()
     {
-        return _pedidos.OrderByDescending(p => p.DataPedido).ToList();
+        if (_context == null) return new List<Pedido>();
+        return _context.Pedidos
+            .Include(p => p.Itens)
+            .OrderByDescending(p => p.DataPedido)
+            .ToList();
     }
 
     public static Pedido? Get(int id)
     {
-        return _pedidos.FirstOrDefault(p => p.Id == id);
+        if (_context == null) return null;
+        return _context.Pedidos
+            .Include(p => p.Itens)
+            .FirstOrDefault(p => p.Id == id);
     }
 
     public static void Add(Pedido pedido)
     {
-        pedido.Id = _nextId++;
-        pedido.DataPedido = DateTime.Now;
-        pedido.Status = "Preparando";
+        if (_context == null) return;
         
-        // Calcular valor total
-        if (pedido.Itens != null)
-        {
-            pedido.ValorTotal = pedido.Itens.Sum(i => i.Subtotal);
-        }
-        
-        _pedidos.Add(pedido);
+        _context.Pedidos.Add(pedido);
+        _context.SaveChanges();
     }
 
-    public static void UpdateStatus(int id, string novoStatus)
+    public static void Update(Pedido pedido)
     {
-        var pedido = Get(id);
-        if (pedido != null)
-        {
-            pedido.Status = novoStatus;
-        }
-    }
-
-    public static void Update(Pedido pedidoAtualizado)
-    {
-        var index = _pedidos.FindIndex(p => p.Id == pedidoAtualizado.Id);
-        if (index != -1)
-        {
-            _pedidos[index] = pedidoAtualizado;
-        }
+        if (_context == null) return;
+        
+        _context.Pedidos.Update(pedido);
+        _context.SaveChanges();
     }
 
     public static void Delete(int id)
     {
+        if (_context == null) return;
+        
         var pedido = Get(id);
         if (pedido != null)
         {
-            _pedidos.Remove(pedido);
+            _context.Pedidos.Remove(pedido);
+            _context.SaveChanges();
         }
     }
 }
