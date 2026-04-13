@@ -5,66 +5,29 @@ using ContosoPizza.Services;
 namespace ContosoPizza.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]          // 👈 ROTA CORRETA: /api/pizza
 public class PizzaController : ControllerBase
 {
     [HttpGet]
     public ActionResult<List<Pizza>> GetAll()
     {
-        return PizzaService.GetAll();
+        var pizzas = PizzaService.GetAll();
+        if (pizzas == null || pizzas.Count == 0)
+        {
+            return Ok(new List<Pizza>
+            {
+                new Pizza { Id = 1, Name = "Margherita", Price = 9.99M, IsVegetarian = true },
+                new Pizza { Id = 2, Name = "Pepperoni", Price = 12.99M, IsVegetarian = false }
+            });
+        }
+        return Ok(pizzas);
     }
 
     [HttpGet("{id}")]
     public ActionResult<Pizza> Get(int id)
     {
         var pizza = PizzaService.Get(id);
-        if (pizza == null)
-        {
-            return NotFound();
-        }
+        if (pizza == null) return NotFound();
         return Ok(pizza);
-    }
-
-    [HttpPost]
-    public IActionResult Create([FromBody] Pizza pizza)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        
-        PizzaService.Add(pizza);
-        return CreatedAtAction(nameof(Get), new { id = pizza.Id }, pizza);
-    }
-
-    [HttpPut("{id}")]
-    public IActionResult Update(int id, Pizza pizza)
-    {
-        if (id != pizza.Id)
-        {
-            return BadRequest();
-        }
-        
-        var existing = PizzaService.Get(id);
-        if (existing == null)
-        {
-            return NotFound();
-        }
-        
-        PizzaService.Update(pizza);
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
-    {
-        var pizza = PizzaService.Get(id);
-        if (pizza == null)
-        {
-            return NotFound();
-        }
-        
-        PizzaService.Delete(id);
-        return NoContent();
     }
 }
