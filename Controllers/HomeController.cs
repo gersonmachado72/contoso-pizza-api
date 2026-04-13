@@ -6,57 +6,50 @@ namespace ContosoPizza.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
-    {
-        return View();
-    }
+    public IActionResult Index() => View();
 
     [HttpPost]
-    public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
+    public IActionResult FazerPedido([FromBody] PedidoRequest request)
     {
-        if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
-        {
-            return BadRequest("Dados do pedido inválidos");
-        }
-        
-        // Converter ViewModel para Model
         var pedido = new Pedido
         {
-            NomeCliente = pedidoVM.NomeCliente,
-            Endereco = pedidoVM.Endereco,
-            Telefone = pedidoVM.Telefone,
-            Itens = new List<ItemPedido>()
+            NomeCliente = request.NomeCliente,
+            Endereco = request.Endereco,
+            Telefone = request.Telefone,
+            Observacao = request.Observacao,
+            MetodoPagamento = request.MetodoPagamento,
+            PagamentoConfirmado = false,  // Aguardar confirmação do admin
+            RestaurantId = 1,
+            DataPedido = DateTime.Now,
+            Status = "Preparando",
+            Itens = new List<ItemPedido>(),
+            ValorTotal = 0
         };
         
-        if (pedidoVM.Itens != null)
+        decimal total = 0;
+        foreach (var item in request.Itens)
         {
-            foreach (var item in pedidoVM.Itens)
+            var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
+            if (pizza != null)
             {
-                // Calcular preço baseado no tamanho (simplificado)
-                decimal precoBase = 0;
-                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
-                if (pizza != null)
-                {
-                    precoBase = pizza.Price;
-                    
-                    // Ajuste por tamanho
-                    if (item.Tamanho == "Média") precoBase += 5;
-                    else if (item.Tamanho == "Grande") precoBase += 10;
-                    else if (item.Tamanho == "Família") precoBase += 15;
-                }
+                decimal preco = pizza.Price;
+                if (item.Tamanho == "Média") preco += 5;
+                else if (item.Tamanho == "Grande") preco += 10;
                 
-                pedido.Itens.Add(new ItemPedido
+                var itemPedido = new ItemPedido
                 {
                     Sabor = item.Sabor,
                     Tamanho = item.Tamanho,
                     Quantidade = item.Quantidade,
-                    PrecoUnitario = precoBase
-                });
+                    PrecoUnitario = preco
+                };
+                pedido.Itens.Add(itemPedido);
+                total += preco * item.Quantidade;
             }
         }
+        pedido.ValorTotal = total;
         
         PedidoService.Add(pedido);
-        
         return View("PedidoConfirmado", pedido);
     }
     
@@ -67,23 +60,32 @@ public class HomeController : Controller
     }
     
     [HttpPost]
-    public IActionResult AtualizarStatus(int id, string status)
+    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
-        PedidoService.UpdateStatus(id, status);
+        var pedido = PedidoService.Get(id);
+        if (pedido != null)
+        {
+            pedido.Status = status;
+            pedido.EntregadorNome = entregador;
+            pedido.PagamentoConfirmado = pagamentoConfirmado;
+            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
+            PedidoService.Update(pedido);
+        }
         return RedirectToAction("AdminPedidos");
     }
 }
 
-// ViewModel para receber dados do formulário
-public class PedidoViewModel
+public class PedidoRequest
 {
     public string? NomeCliente { get; set; }
     public string? Endereco { get; set; }
     public string? Telefone { get; set; }
-    public List<ItemPedidoVM>? Itens { get; set; }
+    public string? Observacao { get; set; }
+    public string? MetodoPagamento { get; set; }
+    public List<ItemPedidoRequest>? Itens { get; set; }
 }
 
-public class ItemPedidoVM
+public class ItemPedidoRequest
 {
     public string? Sabor { get; set; }
     public string? Tamanho { get; set; }

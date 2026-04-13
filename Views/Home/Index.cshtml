@@ -6,25 +6,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ContosoPizza - A Melhor Pizzaria</title>
+    <title>ContosoPizza - Cardápio Digital</title>
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .payment-icons {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-option.selected {
+            border-color: #e67e22;
+            background: #fef5e8;
+        }
+        .payment-option input {
+            margin: 0;
+            width: auto;
+        }
+        .payment-icon {
+            font-size: 1.5rem;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+        }
+    </style>
 </head>
 <body>
-    <!-- Cabeçalho com imagem cabecalho.jpg -->
     <header class="main-header">
         <div class="header-container">
-            <div class="site-name">
-                <span>🍕</span> ContosoPizza
-            </div>
+            <div class="site-name"><span>🍕</span> ContosoPizza</div>
             <div class="logo-area">
-                <img src="/images/logo.jpg" alt="Logo ContosoPizza" class="logo-img">
+                <img src="/images/logo.jpg" alt="Logo" class="logo-img">
                 <span class="site-title">Qualidade que dá gosto!</span>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <!-- Seção Cardápio -->
         <section class="cardapio">
             <h2>📋 Nosso Cardápio Especial</h2>
             <div id="pizzas-list" class="pizzas-grid">
@@ -32,21 +65,53 @@
             </div>
         </section>
 
-        <!-- Seção Pedido -->
         <section class="pedido-form">
             <h2>📝 Monte seu Pedido</h2>
-            <form id="pedidoForm">
+            <form id="pedidoForm" autocomplete="off">
                 <div class="form-group">
                     <label>👤 Seu nome completo:</label>
-                    <input type="text" id="nomeCliente" placeholder="Ex: João Silva" required>
+                    <input type="text" id="nomeCliente" required>
                 </div>
                 <div class="form-group">
                     <label>📍 Endereço para entrega:</label>
-                    <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade" required>
+                    <input type="text" id="endereco" required>
                 </div>
                 <div class="form-group">
                     <label>📞 Telefone para contato:</label>
-                    <input type="tel" id="telefone" placeholder="(00) 00000-0000" required>
+                    <input type="tel" id="telefone" required>
+                </div>
+
+                <!-- NOVO: Campo Observação -->
+                <div class="form-group">
+                    <label>📝 Observações (opcional):</label>
+                    <textarea id="observacao" rows="3" placeholder="Ex: sem cebola, portão azul, etc..."></textarea>
+                </div>
+
+                <!-- NOVO: Método de Pagamento -->
+                <div class="form-group">
+                    <label>💳 Forma de pagamento:</label>
+                    <div class="payment-icons" id="paymentMethods">
+                        <div class="payment-option" data-payment="Dinheiro">
+                            <span class="payment-icon">💵</span>
+                            <span>Dinheiro</span>
+                            <input type="radio" name="pagamento" value="Dinheiro" hidden>
+                        </div>
+                        <div class="payment-option" data-payment="PIX">
+                            <span class="payment-icon">📱</span>
+                            <span>PIX</span>
+                            <input type="radio" name="pagamento" value="PIX" hidden>
+                        </div>
+                        <div class="payment-option" data-payment="Cartão Débito">
+                            <span class="payment-icon">💳</span>
+                            <span>Cartão Débito</span>
+                            <input type="radio" name="pagamento" value="Cartão Débito" hidden>
+                        </div>
+                        <div class="payment-option" data-payment="Cartão Crédito">
+                            <span class="payment-icon">💎</span>
+                            <span>Cartão Crédito</span>
+                            <input type="radio" name="pagamento" value="Cartão Crédito" hidden>
+                        </div>
+                    </div>
                 </div>
 
                 <h3 style="margin: 20px 0 10px 0;">🍕 Adicione pizzas ao pedido</h3>
@@ -58,37 +123,126 @@
                 </div>
             </form>
         </section>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/Home/AdminPedidos" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none;">📊 Admin - Gerenciar Pedidos</a>
+        </div>
     </div>
 
-    <script src="/js/pedido.js"></script>
     <script>
-        // Carregar pizzas da API
-        fetch('/pizza')
+        let selectedPayment = null;
+        
+        // Seleção de pagamento
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                selectedPayment = opt.dataset.payment;
+            });
+        });
+
+        function adicionarItem() {
+            fetch('/api/pizza')
+                .then(res => res.json())
+                .then(pizzas => {
+                    const itemId = Date.now();
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item-pedido';
+                    
+                    const saborSelect = document.createElement('select');
+                    saborSelect.innerHTML = '<option value="">Selecione o sabor</option>' + 
+                        pizzas.map(p => `<option value="${p.name}" data-preco="${p.price}">${p.name} - R$ ${p.price.toFixed(2)}</option>`).join('');
+                    
+                    const tamanhoSelect = document.createElement('select');
+                    tamanhoSelect.innerHTML = `
+                        <option value="Pequena">🍕 Pequena (R$ +0)</option>
+                        <option value="Média">🍕 Média (R$ +5)</option>
+                        <option value="Grande">🍕 Grande (R$ +10)</option>
+                    `;
+                    
+                    const qtdInput = document.createElement('input');
+                    qtdInput.type = 'number';
+                    qtdInput.min = 1;
+                    qtdInput.max = 10;
+                    qtdInput.value = 1;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '✖ Remover';
+                    removeBtn.className = 'btn-remover';
+                    removeBtn.onclick = () => itemDiv.remove();
+                    
+                    itemDiv.innerHTML = '<strong>🍕 Pizza:</strong><br>';
+                    itemDiv.appendChild(saborSelect);
+                    itemDiv.appendChild(document.createTextNode(' Tamanho: '));
+                    itemDiv.appendChild(tamanhoSelect);
+                    itemDiv.appendChild(document.createTextNode(' Quantidade: '));
+                    itemDiv.appendChild(qtdInput);
+                    itemDiv.appendChild(removeBtn);
+                    
+                    document.getElementById('itensPedido').appendChild(itemDiv);
+                });
+        }
+
+        document.getElementById('pedidoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!selectedPayment) {
+                alert('Selecione uma forma de pagamento!');
+                return;
+            }
+            
+            const itens = [];
+            document.querySelectorAll('.item-pedido').forEach(item => {
+                const sabor = item.querySelector('select:first-child')?.value;
+                const tamanho = item.querySelectorAll('select')[1]?.value;
+                const quantidade = item.querySelector('input')?.value;
+                if (sabor && tamanho && quantidade > 0) {
+                    itens.push({ sabor, tamanho, quantidade: parseInt(quantidade) });
+                }
+            });
+            
+            if (itens.length === 0) {
+                alert('Adicione pelo menos uma pizza ao pedido!');
+                return;
+            }
+            
+            const pedido = {
+                nomeCliente: document.getElementById('nomeCliente').value,
+                endereco: document.getElementById('endereco').value,
+                telefone: document.getElementById('telefone').value,
+                observacao: document.getElementById('observacao').value,
+                metodoPagamento: selectedPayment,
+                itens: itens
+            };
+            
+            if (!pedido.nomeCliente || !pedido.endereco || !pedido.telefone) {
+                alert('Preencha todos os dados do cliente!');
+                return;
+            }
+            
+            const res = await fetch('/Home/FazerPedido', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pedido)
+            });
+            
+            const html = await res.text();
+            document.body.innerHTML = html;
+        });
+
+        // Carregar pizzas
+        fetch('/api/pizza')
             .then(res => res.json())
             .then(pizzas => {
                 const container = document.getElementById('pizzas-list');
-                container.innerHTML = '';
-                pizzas.forEach(pizza => {
-                    const card = document.createElement('div');
-                    card.className = 'pizza-card';
-                    card.innerHTML = `
-                        <h3>${pizza.name}</h3>
-                        <div class="price">R$ ${pizza.price.toFixed(2)}</div>
-                        <div class="badge">${pizza.isVegetarian ? '🌱 Vegetariana' : '🍖 Tradicional'}</div>
-                    `;
-                    container.appendChild(card);
-                });
-            })
-            .catch(error => {
-                document.getElementById('pizzas-list').innerHTML = '<div class="pizza-card">Erro ao carregar cardápio. Tente novamente.</div>';
+                container.innerHTML = pizzas.map(p => `
+                    <div class="pizza-card">
+                        <h3>${p.name}</h3>
+                        <div class="price">R$ ${p.price.toFixed(2)}</div>
+                        <div class="badge">${p.isVegetarian ? '🌱 Vegetariana' : '🍖 Tradicional'}</div>
+                    </div>
+                `).join('');
             });
     </script>
 </body>
 </html>
-
-<!-- Adicionar no final do container, antes de fechar </div> -->
-<div style="text-align: center; margin-top: 20px;">
-    <a href="/Home/AdminPedidos" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; display: inline-block;">
-        📊 Admin - Gerenciar Pedidos
-    </a>
-</div>

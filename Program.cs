@@ -1,8 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using ContosoPizza.Data;
 using ContosoPizza.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar Timezone do Brasil
+try
+{
+    // Para Linux (Render)
+    TimeZoneInfo.TryFindSystemTimeZoneById("America/Sao_Paulo", out var tz);
+    if (tz == null)
+    {
+        // Fallback para Windows
+        tz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+    }
+    CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
+    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Erro ao configurar timezone: {ex.Message}");
+}
 
 // Add services
 builder.Services.AddControllers();
@@ -10,31 +29,35 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// 🔴 IMPORTANTE: Usar PostgreSQL do Render
+// Database
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (string.IsNullOrEmpty(databaseUrl))
 {
-    // Fallback para SQLite se não tiver DATABASE_URL
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite("Data Source=contosopizza.db"));
 }
 else
 {
-    // Converter DATABASE_URL para connection string do PostgreSQL
-    // Formato: postgresql://usuario:senha@host:porta/database
     var uri = new Uri(databaseUrl);
-    var connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true";
+    var userInfo = uri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo[1];
+    var database = uri.AbsolutePath.TrimStart('/');
+    var connectionString = $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
     
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
+    {
+        options.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            npgsqlOptions.UseNetTopologySuite();
+        });
+    });
 }
 
-// Cloudinary
 builder.Services.AddScoped<CloudinaryService>();
 
 var app = builder.Build();
 
-// Criar banco de dados e tabelas
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
