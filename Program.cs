@@ -8,11 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Configurar Timezone do Brasil
 try
 {
-    // Para Linux (Render)
     TimeZoneInfo.TryFindSystemTimeZoneById("America/Sao_Paulo", out var tz);
     if (tz == null)
     {
-        // Fallback para Windows
         tz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
     }
     CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
@@ -23,7 +21,6 @@ catch (Exception ex)
     Console.WriteLine($"Erro ao configurar timezone: {ex.Message}");
 }
 
-// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -46,12 +43,7 @@ else
     var connectionString = $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
     
     builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseNpgsql(connectionString, npgsqlOptions =>
-        {
-            npgsqlOptions.UseNetTopologySuite();
-        });
-    });
+        options.UseNpgsql(connectionString));
 }
 
 builder.Services.AddScoped<CloudinaryService>();

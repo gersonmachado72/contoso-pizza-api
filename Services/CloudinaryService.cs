@@ -2,13 +2,12 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
 
 namespace ContosoPizza.Services;
 
 public class CloudinaryService
 {
-    private readonly Cloudinary _cloudinary;
+    private readonly Cloudinary? _cloudinary;
 
     public CloudinaryService(IConfiguration configuration)
     {

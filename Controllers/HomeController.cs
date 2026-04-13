@@ -11,14 +11,19 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult FazerPedido([FromBody] PedidoRequest request)
     {
+        if (request == null || string.IsNullOrEmpty(request.NomeCliente))
+        {
+            return BadRequest("Dados inválidos");
+        }
+        
         var pedido = new Pedido
         {
-            NomeCliente = request.NomeCliente,
-            Endereco = request.Endereco,
-            Telefone = request.Telefone,
-            Observacao = request.Observacao,
-            MetodoPagamento = request.MetodoPagamento,
-            PagamentoConfirmado = false,  // Aguardar confirmação do admin
+            NomeCliente = request.NomeCliente ?? string.Empty,
+            Endereco = request.Endereco ?? string.Empty,
+            Telefone = request.Telefone ?? string.Empty,
+            Observacao = request.Observacao ?? string.Empty,
+            MetodoPagamento = request.MetodoPagamento ?? "Dinheiro",
+            PagamentoConfirmado = false,
             RestaurantId = 1,
             DataPedido = DateTime.Now,
             Status = "Preparando",
@@ -27,24 +32,27 @@ public class HomeController : Controller
         };
         
         decimal total = 0;
-        foreach (var item in request.Itens)
+        if (request.Itens != null)
         {
-            var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
-            if (pizza != null)
+            foreach (var item in request.Itens)
             {
-                decimal preco = pizza.Price;
-                if (item.Tamanho == "Média") preco += 5;
-                else if (item.Tamanho == "Grande") preco += 10;
-                
-                var itemPedido = new ItemPedido
+                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
+                if (pizza != null)
                 {
-                    Sabor = item.Sabor,
-                    Tamanho = item.Tamanho,
-                    Quantidade = item.Quantidade,
-                    PrecoUnitario = preco
-                };
-                pedido.Itens.Add(itemPedido);
-                total += preco * item.Quantidade;
+                    decimal preco = pizza.Price;
+                    if (item.Tamanho == "Média") preco += 5;
+                    else if (item.Tamanho == "Grande") preco += 10;
+                    
+                    var itemPedido = new ItemPedido
+                    {
+                        Sabor = item.Sabor,
+                        Tamanho = item.Tamanho,
+                        Quantidade = item.Quantidade,
+                        PrecoUnitario = preco
+                    };
+                    pedido.Itens.Add(itemPedido);
+                    total += preco * item.Quantidade;
+                }
             }
         }
         pedido.ValorTotal = total;
