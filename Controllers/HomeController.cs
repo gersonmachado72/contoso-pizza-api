@@ -8,44 +8,50 @@ public class HomeController : Controller
 {
     public IActionResult Index() => View();
 
-    [HttpPost]
-    public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
+    [HttpPost("FazerPedido")]  // Rota explícita
+    public IActionResult FazerPedido([FromBody] PedidoRequest request)
     {
-        if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
-        {
-            return BadRequest("Dados do pedido inválidos");
-        }
-        
+        if (request == null || string.IsNullOrEmpty(request.NomeCliente))
+            return BadRequest("Nome do cliente é obrigatório");
+
         var pedido = new Pedido
         {
-            NomeCliente = pedidoVM.NomeCliente,
-            Endereco = pedidoVM.Endereco,
-            Telefone = pedidoVM.Telefone,
-            Itens = new List<ItemPedido>()
+            NomeCliente = request.NomeCliente,
+            Endereco = request.Endereco ?? "",
+            Telefone = request.Telefone ?? "",
+            Observacao = request.Observacao ?? "",
+            MetodoPagamento = request.MetodoPagamento ?? "Dinheiro",
+            PagamentoConfirmado = false,
+            RestaurantId = 1,
+            DataPedido = DateTime.Now,
+            Status = "Preparando",
+            Itens = new List<ItemPedido>(),
+            ValorTotal = 0
         };
         
-        if (pedidoVM.Itens != null)
+        decimal total = 0;
+        var pizzas = PizzaService.GetAll();
+        
+        foreach (var item in request.Itens ?? new List<ItemPedidoRequest>())
         {
-            foreach (var item in pedidoVM.Itens)
+            var pizza = pizzas.FirstOrDefault(p => p.Name == item.Sabor);
+            if (pizza != null)
             {
-                decimal precoBase = 0;
-                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
-                if (pizza != null)
-                {
-                    precoBase = pizza.Price;
-                    if (item.Tamanho == "Média") precoBase += 5;
-                    else if (item.Tamanho == "Grande") precoBase += 10;
-                }
+                decimal preco = pizza.Price;
+                if (item.Tamanho == "Média") preco += 5;
+                else if (item.Tamanho == "Grande") preco += 10;
                 
                 pedido.Itens.Add(new ItemPedido
                 {
                     Sabor = item.Sabor,
                     Tamanho = item.Tamanho,
                     Quantidade = item.Quantidade,
-                    PrecoUnitario = precoBase
+                    PrecoUnitario = preco
                 });
+                total += preco * item.Quantidade;
             }
         }
+        pedido.ValorTotal = total;
         
         PedidoService.Add(pedido);
         return View("PedidoConfirmado", pedido);
@@ -57,7 +63,7 @@ public class HomeController : Controller
         return View(pedidos);
     }
     
-    [HttpPost]
+    [HttpPost("AtualizarStatus")]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = PedidoService.Get(id);
@@ -73,17 +79,17 @@ public class HomeController : Controller
     }
 }
 
-public class PedidoViewModel
+public class PedidoRequest
 {
     public string? NomeCliente { get; set; }
     public string? Endereco { get; set; }
     public string? Telefone { get; set; }
     public string? Observacao { get; set; }
     public string? MetodoPagamento { get; set; }
-    public List<ItemPedidoVM>? Itens { get; set; }
+    public List<ItemPedidoRequest>? Itens { get; set; }
 }
 
-public class ItemPedidoVM
+public class ItemPedidoRequest
 {
     public string? Sabor { get; set; }
     public string? Tamanho { get; set; }
