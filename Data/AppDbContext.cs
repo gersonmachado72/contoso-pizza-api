@@ -18,22 +18,11 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         
-        // Configurar relacionamento Pedido -> ItensPedido
-        modelBuilder.Entity<Pedido>()
-            .HasMany(p => p.Itens)
-            .WithOne(i => i.Pedido)
+        // Configuração explícita da relação
+        modelBuilder.Entity<ItemPedido>()
+            .HasOne(i => i.Pedido)
+            .WithMany(p => p.Itens)
             .HasForeignKey(i => i.PedidoId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        // Configurar tabela ItemPedido
-        modelBuilder.Entity<ItemPedido>(entity =>
-        {
-            entity.ToTable("ItemPedido");
-            entity.Property(e => e.PedidoId).IsRequired(); // Forçar NOT NULL
-            entity.HasOne(i => i.Pedido)
-                  .WithMany(p => p.Itens)
-                  .HasForeignKey(i => i.PedidoId)
-                  .OnDelete(DeleteBehavior.Cascade);
-        });
     }
 }

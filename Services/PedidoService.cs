@@ -30,21 +30,57 @@ public class PedidoService
 
     public void Add(Pedido pedido)
     {
-        // Garantir que os itens estão corretamente vinculados
-        if (pedido.Itens != null)
+        using var transaction = _context.Database.BeginTransaction();
+        try
         {
-            foreach (var item in pedido.Itens)
+            // 1. Salvar o pedido primeiro (sem os itens)
+            var novoPedido = new Pedido
             {
-                item.PedidoId = 0; // Será definido automaticamente pelo EF
-                item.Id = 0;
+                NomeCliente = pedido.NomeCliente,
+                Endereco = pedido.Endereco,
+                Telefone = pedido.Telefone,
+                Observacao = pedido.Observacao,
+                MetodoPagamento = pedido.MetodoPagamento,
+                PagamentoConfirmado = pedido.PagamentoConfirmado,
+                RestaurantId = pedido.RestaurantId,
+                DataPedido = pedido.DataPedido,
+                Status = pedido.Status,
+                ValorTotal = pedido.ValorTotal,
+                Itens = null // Sem itens por enquanto
+            };
+            
+            _context.Pedidos.Add(novoPedido);
+            _context.SaveChanges();
+            
+            // 2. Agora adicionar os itens com o PedidoId correto
+            if (pedido.Itens != null && pedido.Itens.Any())
+            {
+                foreach (var item in pedido.Itens)
+                {
+                    var novoItem = new ItemPedido
+                    {
+                        PedidoId = novoPedido.Id,
+                        Sabor = item.Sabor,
+                        Tamanho = item.Tamanho,
+                        Quantidade = item.Quantidade,
+                        PrecoUnitario = item.PrecoUnitario,
+                        ObservacaoItem = item.ObservacaoItem
+                    };
+                    _context.ItensPedido.Add(novoItem);
+                }
+                _context.SaveChanges();
             }
+            
+            // 3. Atualizar o pedido original com o ID gerado
+            pedido.Id = novoPedido.Id;
+            
+            transaction.Commit();
         }
-        
-        _context.Pedidos.Add(pedido);
-        _context.SaveChanges();
-        
-        // Recarregar para garantir que os IDs estão corretos
-        _context.Entry(pedido).State = EntityState.Detached;
+        catch (Exception ex)
+        {
+            transaction.Rollback();
+            throw new Exception($"Erro ao salvar pedido: {ex.Message}", ex);
+        }
     }
 
     public void Update(Pedido pedido)
