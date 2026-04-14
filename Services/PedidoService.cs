@@ -1,101 +1,62 @@
-using Microsoft.EntityFrameworkCore;
-using ContosoPizza.Data;
+using System.Collections.Generic;
+using System.Linq;
 using ContosoPizza.Models;
 
 namespace ContosoPizza.Services;
 
-public class PedidoService
+public static class PedidoService
 {
-    private readonly AppDbContext _context;
+    private static List<Pedido> _pedidos = new();
+    private static int _nextId = 1;
 
-    public PedidoService(AppDbContext context)
+    public static List<Pedido> GetAll()
     {
-        _context = context;
+        return _pedidos.OrderByDescending(p => p.DataPedido).ToList();
     }
 
-    public List<Pedido> GetAll()
+    public static Pedido? Get(int id)
     {
-        return _context.Pedidos
-            .Include(p => p.Itens)
-            .OrderByDescending(p => p.DataPedido)
-            .ToList();
+        return _pedidos.FirstOrDefault(p => p.Id == id);
     }
 
-    public Pedido? Get(int id)
+    public static void Add(Pedido pedido)
     {
-        return _context.Pedidos
-            .Include(p => p.Itens)
-            .FirstOrDefault(p => p.Id == id);
-    }
-
-    public void Add(Pedido pedido)
-    {
-        using var transaction = _context.Database.BeginTransaction();
-        try
+        pedido.Id = _nextId++;
+        pedido.DataPedido = DateTime.Now;
+        pedido.Status = "Preparando";
+        
+        if (pedido.Itens != null)
         {
-            // 1. Salvar o pedido primeiro (sem os itens)
-            var novoPedido = new Pedido
-            {
-                NomeCliente = pedido.NomeCliente,
-                Endereco = pedido.Endereco,
-                Telefone = pedido.Telefone,
-                Observacao = pedido.Observacao,
-                MetodoPagamento = pedido.MetodoPagamento,
-                PagamentoConfirmado = pedido.PagamentoConfirmado,
-                RestaurantId = pedido.RestaurantId,
-                DataPedido = pedido.DataPedido,
-                Status = pedido.Status,
-                ValorTotal = pedido.ValorTotal,
-                Itens = null // Sem itens por enquanto
-            };
-            
-            _context.Pedidos.Add(novoPedido);
-            _context.SaveChanges();
-            
-            // 2. Agora adicionar os itens com o PedidoId correto
-            if (pedido.Itens != null && pedido.Itens.Any())
-            {
-                foreach (var item in pedido.Itens)
-                {
-                    var novoItem = new ItemPedido
-                    {
-                        PedidoId = novoPedido.Id,
-                        Sabor = item.Sabor,
-                        Tamanho = item.Tamanho,
-                        Quantidade = item.Quantidade,
-                        PrecoUnitario = item.PrecoUnitario,
-                        ObservacaoItem = item.ObservacaoItem
-                    };
-                    _context.ItensPedido.Add(novoItem);
-                }
-                _context.SaveChanges();
-            }
-            
-            // 3. Atualizar o pedido original com o ID gerado
-            pedido.Id = novoPedido.Id;
-            
-            transaction.Commit();
+            pedido.ValorTotal = pedido.Itens.Sum(i => i.Subtotal);
         }
-        catch (Exception ex)
-        {
-            transaction.Rollback();
-            throw new Exception($"Erro ao salvar pedido: {ex.Message}", ex);
-        }
+        
+        _pedidos.Add(pedido);
     }
 
-    public void Update(Pedido pedido)
-    {
-        _context.Pedidos.Update(pedido);
-        _context.SaveChanges();
-    }
-
-    public void Delete(int id)
+    public static void UpdateStatus(int id, string novoStatus)
     {
         var pedido = Get(id);
         if (pedido != null)
         {
-            _context.Pedidos.Remove(pedido);
-            _context.SaveChanges();
+            pedido.Status = novoStatus;
+        }
+    }
+
+    public static void Update(Pedido pedidoAtualizado)
+    {
+        var index = _pedidos.FindIndex(p => p.Id == pedidoAtualizado.Id);
+        if (index != -1)
+        {
+            _pedidos[index] = pedidoAtualizado;
+        }
+    }
+
+    public static void Delete(int id)
+    {
+        var pedido = Get(id);
+        if (pedido != null)
+        {
+            _pedidos.Remove(pedido);
         }
     }
 }

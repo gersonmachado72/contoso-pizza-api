@@ -8,23 +8,16 @@ namespace ContosoPizza.Controllers;
 [Route("api/[controller]")]
 public class PizzaController : ControllerBase
 {
-    private readonly PizzaService _pizzaService;
-
-    public PizzaController(PizzaService pizzaService)
-    {
-        _pizzaService = pizzaService;
-    }
-
     [HttpGet]
     public ActionResult<List<Pizza>> GetAll()
     {
-        return Ok(_pizzaService.GetAll());
+        return Ok(PizzaService.GetAll());
     }
 
     [HttpGet("{id}")]
     public ActionResult<Pizza> Get(int id)
     {
-        var pizza = _pizzaService.Get(id);
+        var pizza = PizzaService.Get(id);
         if (pizza == null) return NotFound();
         return Ok(pizza);
     }
