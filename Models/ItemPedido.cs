@@ -8,8 +8,8 @@ public class ItemPedido
     [Key]
     public int Id { get; set; }
     
-    [Required(ErrorMessage = "PedidoId é obrigatório")]
-    public int PedidoId { get; set; }  // Chave estrangeira - OBRIGATÓRIA
+    [Required]
+    public int PedidoId { get; set; }
     
     [ForeignKey("PedidoId")]
     public virtual Pedido? Pedido { get; set; }
