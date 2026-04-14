@@ -30,8 +30,21 @@ public class PedidoService
 
     public void Add(Pedido pedido)
     {
+        // Garantir que os itens estão corretamente vinculados
+        if (pedido.Itens != null)
+        {
+            foreach (var item in pedido.Itens)
+            {
+                item.PedidoId = 0; // Será definido automaticamente pelo EF
+                item.Id = 0;
+            }
+        }
+        
         _context.Pedidos.Add(pedido);
         _context.SaveChanges();
+        
+        // Recarregar para garantir que os IDs estão corretos
+        _context.Entry(pedido).State = EntityState.Detached;
     }
 
     public void Update(Pedido pedido)
