@@ -46,20 +46,12 @@ else
         options.UseNpgsql(connectionString));
 }
 
+// Registrar serviços (Scoped = uma instância por requisição HTTP)
+builder.Services.AddScoped<PizzaService>();
+builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<CloudinaryService>();
 
 var app = builder.Build();
-
-// Inicializar serviços com o DbContext
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.EnsureCreated();
-    
-    // Inicializar serviços estáticos
-    PizzaService.Initialize(dbContext);
-    PedidoService.Initialize(dbContext);
-}
 
 if (app.Environment.IsDevelopment())
 {

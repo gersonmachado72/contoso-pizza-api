@@ -6,6 +6,15 @@ namespace ContosoPizza.Controllers;
 
 public class HomeController : Controller
 {
+    private readonly PizzaService _pizzaService;
+    private readonly PedidoService _pedidoService;
+
+    public HomeController(PizzaService pizzaService, PedidoService pedidoService)
+    {
+        _pizzaService = pizzaService;
+        _pedidoService = pedidoService;
+    }
+
     public IActionResult Index() => View();
 
     [HttpPost]
@@ -36,7 +45,7 @@ public class HomeController : Controller
         {
             foreach (var item in request.Itens)
             {
-                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
+                var pizza = _pizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
                 if (pizza != null)
                 {
                     decimal preco = pizza.Price;
@@ -57,27 +66,27 @@ public class HomeController : Controller
         }
         pedido.ValorTotal = total;
         
-        PedidoService.Add(pedido);
+        _pedidoService.Add(pedido);
         return View("PedidoConfirmado", pedido);
     }
     
     public IActionResult AdminPedidos()
     {
-        var pedidos = PedidoService.GetAll();
+        var pedidos = _pedidoService.GetAll();
         return View(pedidos);
     }
     
     [HttpPost]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
-        var pedido = PedidoService.Get(id);
+        var pedido = _pedidoService.Get(id);
         if (pedido != null)
         {
             pedido.Status = status;
             pedido.EntregadorNome = entregador;
             pedido.PagamentoConfirmado = pagamentoConfirmado;
             if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
-            PedidoService.Update(pedido);
+            _pedidoService.Update(pedido);
         }
         return RedirectToAction("AdminPedidos");
     }

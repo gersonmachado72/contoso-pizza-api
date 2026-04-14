@@ -4,11 +4,11 @@ using ContosoPizza.Data;
 
 namespace ContosoPizza.Services;
 
-public static class PizzaService
+public class PizzaService
 {
-    private static AppDbContext? _context;
+    private readonly AppDbContext _context;
 
-    public static void Initialize(AppDbContext context)
+    public PizzaService(AppDbContext context)
     {
         _context = context;
         
@@ -32,35 +32,30 @@ public static class PizzaService
         }
     }
 
-    public static List<Pizza> GetAll()
+    public List<Pizza> GetAll()
     {
-        if (_context?.Pizzas == null) return new List<Pizza>();
         return _context.Pizzas.ToList();
     }
 
-    public static Pizza? Get(int id)
+    public Pizza? Get(int id)
     {
-        if (_context?.Pizzas == null) return null;
         return _context.Pizzas.Find(id);
     }
 
-    public static void Add(Pizza pizza)
+    public void Add(Pizza pizza)
     {
-        if (_context == null) return;
         _context.Pizzas.Add(pizza);
         _context.SaveChanges();
     }
 
-    public static void Update(Pizza pizza)
+    public void Update(Pizza pizza)
     {
-        if (_context == null) return;
         _context.Pizzas.Update(pizza);
         _context.SaveChanges();
     }
 
-    public static void Delete(int id)
+    public void Delete(int id)
     {
-        if (_context == null) return;
         var pizza = Get(id);
         if (pizza != null)
         {
