@@ -20,29 +20,31 @@ public class HomeController : Controller
 
     public IActionResult Index() => View();
 
-    [HttpPost("FazerPedido")]  // 👈 ROTA EXPLÍCITA
+    [HttpPost]
     public IActionResult FazerPedido([FromBody] PedidoRequest request)
     {
         try
         {
-            _logger.LogInformation("=== INICIANDO PROCESSAMENTO DO PEDIDO ===");
-            _logger.LogInformation($"Request recebido: Nome={request?.NomeCliente}");
+            _logger.LogInformation("Recebendo pedido: {@request}", request);
 
             if (request == null)
-                return BadRequest(new { error = "Dados do pedido não enviados" });
+            {
+                _logger.LogWarning("Request é nulo");
+                return BadRequest("Dados do pedido não enviados");
+            }
 
-            if (string.IsNullOrWhiteSpace(request.NomeCliente))
-                return BadRequest(new { error = "Nome do cliente é obrigatório" });
-
-            if (request.Itens == null || !request.Itens.Any())
-                return BadRequest(new { error = "Adicione pelo menos uma pizza ao pedido" });
+            if (string.IsNullOrEmpty(request.NomeCliente))
+            {
+                _logger.LogWarning("Nome do cliente vazio");
+                return BadRequest("Nome do cliente é obrigatório");
+            }
 
             var pedido = new Pedido
             {
                 NomeCliente = request.NomeCliente,
-                Endereco = request.Endereco ?? "",
-                Telefone = request.Telefone ?? "",
-                Observacao = request.Observacao ?? "",
+                Endereco = request.Endereco ?? string.Empty,
+                Telefone = request.Telefone ?? string.Empty,
+                Observacao = request.Observacao ?? string.Empty,
                 MetodoPagamento = request.MetodoPagamento ?? "Dinheiro",
                 PagamentoConfirmado = false,
                 RestaurantId = 1,
@@ -53,37 +55,40 @@ public class HomeController : Controller
             };
             
             decimal total = 0;
-            var pizzas = _pizzaService.GetAll();
-            
-            foreach (var item in request.Itens)
+            if (request.Itens != null)
             {
-                var pizza = pizzas.FirstOrDefault(p => p.Name == item.Sabor);
-                if (pizza == null) continue;
-                
-                decimal preco = pizza.Price;
-                if (item.Tamanho == "Média") preco += 5;
-                else if (item.Tamanho == "Grande") preco += 10;
-                
-                pedido.Itens.Add(new ItemPedido
+                foreach (var item in request.Itens)
                 {
-                    Sabor = item.Sabor,
-                    Tamanho = item.Tamanho,
-                    Quantidade = item.Quantidade,
-                    PrecoUnitario = preco
-                });
-                total += preco * item.Quantidade;
+                    var pizza = _pizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
+                    if (pizza != null)
+                    {
+                        decimal preco = pizza.Price;
+                        if (item.Tamanho == "Média") preco += 5;
+                        else if (item.Tamanho == "Grande") preco += 10;
+                        
+                        var itemPedido = new ItemPedido
+                        {
+                            Sabor = item.Sabor,
+                            Tamanho = item.Tamanho,
+                            Quantidade = item.Quantidade,
+                            PrecoUnitario = preco
+                        };
+                        pedido.Itens.Add(itemPedido);
+                        total += preco * item.Quantidade;
+                    }
+                }
             }
-            
             pedido.ValorTotal = total;
+            
             _pedidoService.Add(pedido);
-            _logger.LogInformation($"Pedido #{pedido.Id} salvo com sucesso!");
+            _logger.LogInformation("Pedido {PedidoId} salvo com sucesso", pedido.Id);
             
             return View("PedidoConfirmado", pedido);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao processar pedido");
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, $"Erro interno: {ex.Message}");
         }
     }
     
@@ -93,7 +98,7 @@ public class HomeController : Controller
         return View(pedidos);
     }
     
-    [HttpPost("AtualizarStatus")]
+    [HttpPost]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = _pedidoService.Get(id);
