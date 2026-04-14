@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using ContosoPizza.Models;
 using ContosoPizza.Data;
+using ContosoPizza.Models;
 
 namespace ContosoPizza.Services;
 
@@ -11,9 +10,9 @@ public class PizzaService
     public PizzaService(AppDbContext context)
     {
         _context = context;
-        
-        // Garantir que há pizzas no banco
-        if (_context.Pizzas != null && !_context.Pizzas.Any())
+
+        // Garantir que existam pizzas no banco (apenas se a tabela estiver vazia)
+        if (!_context.Pizzas.Any())
         {
             _context.Pizzas.AddRange(new List<Pizza>
             {
@@ -32,35 +31,9 @@ public class PizzaService
         }
     }
 
-    public List<Pizza> GetAll()
-    {
-        return _context.Pizzas.ToList();
-    }
-
-    public Pizza? Get(int id)
-    {
-        return _context.Pizzas.Find(id);
-    }
-
-    public void Add(Pizza pizza)
-    {
-        _context.Pizzas.Add(pizza);
-        _context.SaveChanges();
-    }
-
-    public void Update(Pizza pizza)
-    {
-        _context.Pizzas.Update(pizza);
-        _context.SaveChanges();
-    }
-
-    public void Delete(int id)
-    {
-        var pizza = Get(id);
-        if (pizza != null)
-        {
-            _context.Pizzas.Remove(pizza);
-            _context.SaveChanges();
-        }
-    }
+    public List<Pizza> GetAll() => _context.Pizzas.ToList();
+    public Pizza? Get(int id) => _context.Pizzas.Find(id);
+    public void Add(Pizza pizza) { _context.Pizzas.Add(pizza); _context.SaveChanges(); }
+    public void Update(Pizza pizza) { _context.Pizzas.Update(pizza); _context.SaveChanges(); }
+    public void Delete(int id) { var p = Get(id); if (p != null) { _context.Pizzas.Remove(p); _context.SaveChanges(); } }
 }

@@ -10,9 +10,8 @@ try
 {
     TimeZoneInfo.TryFindSystemTimeZoneById("America/Sao_Paulo", out var tz);
     if (tz == null)
-    {
         tz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
-    }
+
     CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
     CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
 }
@@ -26,7 +25,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// Database
+// Configurar o PostgreSQL
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (string.IsNullOrEmpty(databaseUrl))
 {
@@ -41,7 +40,7 @@ else
     var password = userInfo[1];
     var database = uri.AbsolutePath.TrimStart('/');
     var connectionString = $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
-    
+
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
 }

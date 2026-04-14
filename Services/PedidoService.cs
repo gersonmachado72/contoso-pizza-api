@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using ContosoPizza.Models;
 using ContosoPizza.Data;
+using ContosoPizza.Models;
 
 namespace ContosoPizza.Services;
 
