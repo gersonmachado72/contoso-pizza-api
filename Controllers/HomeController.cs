@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
+using Microsoft.Extensions.Logging;
 
 namespace ContosoPizza.Controllers;
 
@@ -8,66 +9,82 @@ public class HomeController : Controller
 {
     private readonly PizzaService _pizzaService;
     private readonly PedidoService _pedidoService;
+    private readonly ILogger<HomeController> _logger;
 
-    public HomeController(PizzaService pizzaService, PedidoService pedidoService)
+    public HomeController(PizzaService pizzaService, PedidoService pedidoService, ILogger<HomeController> logger)
     {
         _pizzaService = pizzaService;
         _pedidoService = pedidoService;
+        _logger = logger;
     }
 
     public IActionResult Index() => View();
 
-    [HttpPost]
+    [HttpPost("FazerPedido")]  // 👈 ROTA EXPLÍCITA
     public IActionResult FazerPedido([FromBody] PedidoRequest request)
     {
-        if (request == null || string.IsNullOrEmpty(request.NomeCliente))
+        try
         {
-            return BadRequest("Dados inválidos");
-        }
-        
-        var pedido = new Pedido
-        {
-            NomeCliente = request.NomeCliente ?? string.Empty,
-            Endereco = request.Endereco ?? string.Empty,
-            Telefone = request.Telefone ?? string.Empty,
-            Observacao = request.Observacao ?? string.Empty,
-            MetodoPagamento = request.MetodoPagamento ?? "Dinheiro",
-            PagamentoConfirmado = false,
-            RestaurantId = 1,
-            DataPedido = DateTime.Now,
-            Status = "Preparando",
-            Itens = new List<ItemPedido>(),
-            ValorTotal = 0
-        };
-        
-        decimal total = 0;
-        if (request.Itens != null)
-        {
+            _logger.LogInformation("=== INICIANDO PROCESSAMENTO DO PEDIDO ===");
+            _logger.LogInformation($"Request recebido: Nome={request?.NomeCliente}");
+
+            if (request == null)
+                return BadRequest(new { error = "Dados do pedido não enviados" });
+
+            if (string.IsNullOrWhiteSpace(request.NomeCliente))
+                return BadRequest(new { error = "Nome do cliente é obrigatório" });
+
+            if (request.Itens == null || !request.Itens.Any())
+                return BadRequest(new { error = "Adicione pelo menos uma pizza ao pedido" });
+
+            var pedido = new Pedido
+            {
+                NomeCliente = request.NomeCliente,
+                Endereco = request.Endereco ?? "",
+                Telefone = request.Telefone ?? "",
+                Observacao = request.Observacao ?? "",
+                MetodoPagamento = request.MetodoPagamento ?? "Dinheiro",
+                PagamentoConfirmado = false,
+                RestaurantId = 1,
+                DataPedido = DateTime.Now,
+                Status = "Preparando",
+                Itens = new List<ItemPedido>(),
+                ValorTotal = 0
+            };
+            
+            decimal total = 0;
+            var pizzas = _pizzaService.GetAll();
+            
             foreach (var item in request.Itens)
             {
-                var pizza = _pizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
-                if (pizza != null)
+                var pizza = pizzas.FirstOrDefault(p => p.Name == item.Sabor);
+                if (pizza == null) continue;
+                
+                decimal preco = pizza.Price;
+                if (item.Tamanho == "Média") preco += 5;
+                else if (item.Tamanho == "Grande") preco += 10;
+                
+                pedido.Itens.Add(new ItemPedido
                 {
-                    decimal preco = pizza.Price;
-                    if (item.Tamanho == "Média") preco += 5;
-                    else if (item.Tamanho == "Grande") preco += 10;
-                    
-                    var itemPedido = new ItemPedido
-                    {
-                        Sabor = item.Sabor,
-                        Tamanho = item.Tamanho,
-                        Quantidade = item.Quantidade,
-                        PrecoUnitario = preco
-                    };
-                    pedido.Itens.Add(itemPedido);
-                    total += preco * item.Quantidade;
-                }
+                    Sabor = item.Sabor,
+                    Tamanho = item.Tamanho,
+                    Quantidade = item.Quantidade,
+                    PrecoUnitario = preco
+                });
+                total += preco * item.Quantidade;
             }
+            
+            pedido.ValorTotal = total;
+            _pedidoService.Add(pedido);
+            _logger.LogInformation($"Pedido #{pedido.Id} salvo com sucesso!");
+            
+            return View("PedidoConfirmado", pedido);
         }
-        pedido.ValorTotal = total;
-        
-        _pedidoService.Add(pedido);
-        return View("PedidoConfirmado", pedido);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao processar pedido");
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
     
     public IActionResult AdminPedidos()
@@ -76,7 +93,7 @@ public class HomeController : Controller
         return View(pedidos);
     }
     
-    [HttpPost]
+    [HttpPost("AtualizarStatus")]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = _pedidoService.Get(id);
