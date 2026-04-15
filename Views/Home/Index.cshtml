@@ -141,7 +141,6 @@
             };
 
             try {
-                // Usar a nova API
                 const res = await fetch('/api/pedidoapi', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -151,13 +150,14 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && data.redirectUrl) {
+                        // Redirecionar para a página de confirmação
                         window.location.href = data.redirectUrl;
                     } else {
                         alert("Pedido criado, mas erro no redirecionamento.");
                     }
                 } else {
-                    const error = await res.text();
-                    alert("Erro ao enviar pedido: " + error);
+                    const errorText = await res.text();
+                    alert("Erro ao enviar pedido: " + errorText);
                 }
             } catch (err) {
                 alert("Erro de conexão: " + err.message);
@@ -180,6 +180,7 @@
                 `).join('');
             } catch (err) {
                 container.innerHTML = "<p style='color:red'>Erro ao carregar cardápio</p>";
+                console.error("Erro ao carregar cardápio:", err);
             }
         }
 
