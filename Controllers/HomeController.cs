@@ -4,7 +4,9 @@ using ContosoPizza.Services;
 
 namespace ContosoPizza.Controllers;
 
-public class HomeController : Controller
+[ApiController]  // Adicionar isso!
+[Route("[controller]")]  // Rota base: /Home
+public class HomeController : ControllerBase  // Mudar para ControllerBase
 {
     private readonly PedidoService _pedidoService;
 
@@ -13,9 +15,14 @@ public class HomeController : Controller
         _pedidoService = pedidoService;
     }
 
-    public IActionResult Index() => View();
+    [HttpGet("Index")]
+    public IActionResult Index()
+    {
+        // Retornar a view HTML
+        return View();
+    }
 
-    [HttpPost]
+    [HttpPost("FazerPedido")]
     public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
     {
         if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
@@ -30,7 +37,6 @@ public class HomeController : Controller
             Telefone = pedidoVM.Telefone,
             Observacao = pedidoVM.Observacao ?? "",
             MetodoPagamento = pedidoVM.MetodoPagamento ?? "Dinheiro",
-            // IMPORTANTE: Converter para UTC
             DataPedido = DateTime.UtcNow,
             Status = "Preparando",
             PagamentoConfirmado = false,
@@ -54,34 +60,31 @@ public class HomeController : Controller
                     else if (item.Tamanho == "Grande") precoBase += 10;
                 }
                 
-                var itemPedido = new ItemPedido
+                pedido.Itens.Add(new ItemPedido
                 {
                     Sabor = item.Sabor,
                     Tamanho = item.Tamanho,
                     Quantidade = item.Quantidade,
                     PrecoUnitario = precoBase
-                };
-                
-                pedido.Itens.Add(itemPedido);
+                });
                 total += precoBase * item.Quantidade;
             }
         }
         
         pedido.ValorTotal = total;
-        
-        Console.WriteLine($"💰 Total calculado: R$ {total}");
-        
         _pedidoService.Add(pedido);
+        
         return View("PedidoConfirmado", pedido);
     }
     
+    [HttpGet("AdminPedidos")]
     public IActionResult AdminPedidos()
     {
         var pedidos = _pedidoService.GetAll();
         return View(pedidos);
     }
     
-    [HttpPost]
+    [HttpPost("AtualizarStatus")]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = _pedidoService.Get(id);
