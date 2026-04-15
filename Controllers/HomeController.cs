@@ -4,7 +4,7 @@ using ContosoPizza.Services;
 
 namespace ContosoPizza.Controllers;
 
-public class HomeController : Controller  // Voltar para Controller (não ControllerBase)
+public class HomeController : Controller
 {
     private readonly PedidoService _pedidoService;
 
@@ -18,7 +18,8 @@ public class HomeController : Controller  // Voltar para Controller (não Contro
         return View();
     }
 
-    [HttpPost("FazerPedido")]
+    [HttpPost]
+    [Route("Home/FazerPedido")]  // Rota explícita e completa
     public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
     {
         if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
@@ -79,7 +80,8 @@ public class HomeController : Controller  // Voltar para Controller (não Contro
         return View(pedidos);
     }
     
-    [HttpPost("AtualizarStatus")]
+    [HttpPost]
+    [Route("Home/AtualizarStatus")]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = _pedidoService.Get(id);
