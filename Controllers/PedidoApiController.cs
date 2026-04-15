@@ -5,7 +5,7 @@ using ContosoPizza.Services;
 namespace ContosoPizza.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]  // Rota: /api/pedidoapi
+[Route("api/[controller]")]
 public class PedidoApiController : ControllerBase
 {
     private readonly PedidoService _pedidoService;
@@ -70,24 +70,7 @@ public class PedidoApiController : ControllerBase
         return Ok(new { 
             success = true, 
             pedidoId = pedido.Id,
-            redirectUrl = Url.Action("PedidoConfirmado", "Home", new { id = pedido.Id })
+            redirectUrl = $"/Home/PedidoConfirmado?id={pedido.Id}"
         });
     }
-}
-
-public class PedidoViewModel
-{
-    public string? NomeCliente { get; set; }
-    public string? Endereco { get; set; }
-    public string? Telefone { get; set; }
-    public string? Observacao { get; set; }
-    public string? MetodoPagamento { get; set; }
-    public List<ItemPedidoVM>? Itens { get; set; }
-}
-
-public class ItemPedidoVM
-{
-    public string? Sabor { get; set; }
-    public string? Tamanho { get; set; }
-    public int Quantidade { get; set; }
 }
