@@ -18,8 +18,8 @@ public class HomeController : Controller
         return View();
     }
 
+    // Rota padrão do ASP.NET Core: /Home/FazerPedido com POST
     [HttpPost]
-    [Route("Home/FazerPedido")]  // Rota explícita e completa
     public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
     {
         if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
@@ -81,7 +81,6 @@ public class HomeController : Controller
     }
     
     [HttpPost]
-    [Route("Home/AtualizarStatus")]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = _pedidoService.Get(id);
