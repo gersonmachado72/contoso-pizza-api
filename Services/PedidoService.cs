@@ -14,10 +14,12 @@ public class PedidoService
     public PedidoService(AppDbContext context)
     {
         _context = context;
+        Console.WriteLine("✅ PedidoService inicializado");
     }
 
     public List<Pedido> GetAll()
     {
+        Console.WriteLine("📋 Buscando todos os pedidos");
         return _context.Pedidos
             .Include(p => p.Itens)
             .OrderByDescending(p => p.DataPedido)
@@ -26,6 +28,7 @@ public class PedidoService
 
     public Pedido? Get(int id)
     {
+        Console.WriteLine($"🔍 Buscando pedido {id}");
         return _context.Pedidos
             .Include(p => p.Itens)
             .FirstOrDefault(p => p.Id == id);
@@ -33,15 +36,10 @@ public class PedidoService
 
     public void Add(Pedido pedido)
     {
-        // Garantir que DataPedido está em UTC
-        if (pedido.DataPedido.Kind != DateTimeKind.Utc)
-        {
-            pedido.DataPedido = DateTime.SpecifyKind(pedido.DataPedido, DateTimeKind.Utc);
-        }
-        
+        Console.WriteLine($"💾 Salvando pedido para {pedido.NomeCliente}, total: {pedido.ValorTotal}");
         _context.Pedidos.Add(pedido);
         _context.SaveChanges();
-        Console.WriteLine($"✅ Pedido #{pedido.Id} salvo com total R$ {pedido.ValorTotal}");
+        Console.WriteLine($"✅ Pedido {pedido.Id} salvo com sucesso!");
     }
 
     public void Update(Pedido pedido)

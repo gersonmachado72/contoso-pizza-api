@@ -16,61 +16,57 @@ public class PedidoApiController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CriarPedido([FromBody] PedidoViewModel pedidoVM)
+    public IActionResult CriarPedido([FromBody] PedidoViewModel request)
     {
-        if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
+        if (request == null || string.IsNullOrEmpty(request.NomeCliente))
         {
-            return BadRequest(new { error = "Dados do pedido inválidos" });
+            return BadRequest(new { error = "Nome do cliente é obrigatório" });
+        }
+
+        // Calcular preços
+        decimal total = 0;
+        var itens = new List<ItemPedido>();
+
+        if (request.Itens != null)
+        {
+            foreach (var item in request.Itens)
+            {
+                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
+                if (pizza != null)
+                {
+                    decimal preco = pizza.Price;
+                    if (item.Tamanho == "Média") preco += 5;
+                    else if (item.Tamanho == "Grande") preco += 10;
+
+                    itens.Add(new ItemPedido
+                    {
+                        Sabor = item.Sabor,
+                        Tamanho = item.Tamanho,
+                        Quantidade = item.Quantidade,
+                        PrecoUnitario = preco
+                    });
+                    total += preco * item.Quantidade;
+                }
+            }
         }
 
         var pedido = new Pedido
         {
-            NomeCliente = pedidoVM.NomeCliente,
-            Endereco = pedidoVM.Endereco ?? "",
-            Telefone = pedidoVM.Telefone ?? "",
-            Observacao = pedidoVM.Observacao ?? "",
-            MetodoPagamento = pedidoVM.MetodoPagamento ?? "Dinheiro",
+            NomeCliente = request.NomeCliente,
+            Endereco = request.Endereco ?? "",
+            Telefone = request.Telefone ?? "",
+            Observacao = request.Observacao ?? "",
+            MetodoPagamento = request.MetodoPagamento ?? "Dinheiro",
             DataPedido = DateTime.UtcNow,
             Status = "Preparando",
             PagamentoConfirmado = false,
             RestaurantId = 1,
-            Itens = new List<ItemPedido>(),
-            ValorTotal = 0
+            Itens = itens,
+            ValorTotal = total
         };
 
-        decimal total = 0;
-
-        if (pedidoVM.Itens != null)
-        {
-            foreach (var item in pedidoVM.Itens)
-            {
-                decimal precoBase = 0;
-                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
-                if (pizza != null)
-                {
-                    precoBase = pizza.Price;
-                    if (item.Tamanho == "Média") precoBase += 5;
-                    else if (item.Tamanho == "Grande") precoBase += 10;
-                }
-
-                pedido.Itens.Add(new ItemPedido
-                {
-                    Sabor = item.Sabor,
-                    Tamanho = item.Tamanho,
-                    Quantidade = item.Quantidade,
-                    PrecoUnitario = precoBase
-                });
-                total += precoBase * item.Quantidade;
-            }
-        }
-
-        pedido.ValorTotal = total;
         _pedidoService.Add(pedido);
 
-        return Ok(new { 
-            success = true, 
-            pedidoId = pedido.Id,
-            redirectUrl = $"/Home/PedidoConfirmado?id={pedido.Id}"
-        });
+        return Ok(new { success = true, pedidoId = pedido.Id, message = "Pedido criado com sucesso" });
     }
 }
