@@ -4,9 +4,7 @@ using ContosoPizza.Services;
 
 namespace ContosoPizza.Controllers;
 
-[ApiController]  // Adicionar isso!
-[Route("[controller]")]  // Rota base: /Home
-public class HomeController : ControllerBase  // Mudar para ControllerBase
+public class HomeController : Controller  // Voltar para Controller (não ControllerBase)
 {
     private readonly PedidoService _pedidoService;
 
@@ -15,10 +13,8 @@ public class HomeController : ControllerBase  // Mudar para ControllerBase
         _pedidoService = pedidoService;
     }
 
-    [HttpGet("Index")]
     public IActionResult Index()
     {
-        // Retornar a view HTML
         return View();
     }
 
@@ -77,7 +73,6 @@ public class HomeController : ControllerBase  // Mudar para ControllerBase
         return View("PedidoConfirmado", pedido);
     }
     
-    [HttpGet("AdminPedidos")]
     public IActionResult AdminPedidos()
     {
         var pedidos = _pedidoService.GetAll();
