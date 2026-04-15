@@ -85,7 +85,6 @@
             if (opt.dataset.payment === selectedPayment) opt.classList.add('selected');
         });
 
-        // Adicionar item de pizza
         function adicionarItem() {
             const container = document.getElementById('itensPedido');
             const itemDiv = document.createElement('div');
@@ -107,7 +106,6 @@
             container.appendChild(itemDiv);
         }
 
-        // Finalizar pedido
         async function finalizarPedido() {
             const itens = [];
             document.querySelectorAll('.item-pedido').forEach(item => {
@@ -143,15 +141,20 @@
             };
 
             try {
-                const res = await fetch('/Home/FazerPedido', {
+                // Usar a nova API
+                const res = await fetch('/api/pedidoapi', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(pedido)
                 });
 
                 if (res.ok) {
-                    const html = await res.text();
-                    document.body.innerHTML = html;
+                    const data = await res.json();
+                    if (data.success && data.redirectUrl) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        alert("Pedido criado, mas erro no redirecionamento.");
+                    }
                 } else {
                     const error = await res.text();
                     alert("Erro ao enviar pedido: " + error);
@@ -161,7 +164,6 @@
             }
         }
 
-        // Carregar cardápio
         async function carregarCardapio() {
             const container = document.getElementById('pizzas-list');
             container.innerHTML = "Carregando...";
@@ -181,7 +183,6 @@
             }
         }
 
-        // Inicializar eventos
         document.getElementById('btnAdicionarPizza').addEventListener('click', adicionarItem);
         document.getElementById('btnFinalizarPedido').addEventListener('click', finalizarPedido);
         carregarCardapio();
