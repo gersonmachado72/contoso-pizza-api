@@ -9,13 +9,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// Usar SQLite local (sem depender de variável externa)
+// Registrar serviços
+builder.Services.AddScoped<PedidoService>();
+
+// Usar SQLite local
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=contosopizza.db"));
 
 var app = builder.Build();
 
-// Criar banco de dados se não existir
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
