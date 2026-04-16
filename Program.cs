@@ -9,9 +9,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// Registrar serviços
-builder.Services.AddScoped<PedidoService>();
-
 // Usar SQLite local
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=contosopizza.db"));
