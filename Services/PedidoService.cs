@@ -34,18 +34,21 @@ public static class PedidoService
     {
         if (_context == null) return;
         
-        // Garantir que os itens estão vinculados
-        if (pedido.Itens != null)
+        // Garantir que DataPedido está preenchida
+        if (pedido.DataPedido == DateTime.MinValue)
         {
-            foreach (var item in pedido.Itens)
-            {
-                item.Id = 0;
-                item.PedidoId = 0;
-            }
+            pedido.DataPedido = DateTime.Now;
         }
         
         _context.Pedidos.Add(pedido);
         _context.SaveChanges();
+        
+        // Recarregar o pedido para obter o ID gerado
+        if (pedido.Id == 0)
+        {
+            var saved = _context.Pedidos.OrderByDescending(p => p.Id).FirstOrDefault();
+            if (saved != null) pedido.Id = saved.Id;
+        }
     }
 
     public static void Update(Pedido pedido)

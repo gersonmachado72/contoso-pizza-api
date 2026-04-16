@@ -26,8 +26,14 @@ public class HomeController : Controller
             Telefone = pedidoVM.Telefone,
             Observacao = pedidoVM.Observacao ?? "",
             MetodoPagamento = pedidoVM.MetodoPagamento ?? "Dinheiro",
+            DataPedido = DateTime.Now,
+            Status = "Preparando",
+            PagamentoConfirmado = false,
+            RestaurantId = 1,
             Itens = new List<ItemPedido>()
         };
+        
+        decimal total = 0;
         
         if (pedidoVM.Itens != null)
         {
@@ -42,17 +48,24 @@ public class HomeController : Controller
                     else if (item.Tamanho == "Grande") precoBase += 10;
                 }
                 
-                pedido.Itens.Add(new ItemPedido
+                var itemPedido = new ItemPedido
                 {
                     Sabor = item.Sabor,
                     Tamanho = item.Tamanho,
                     Quantidade = item.Quantidade,
                     PrecoUnitario = precoBase
-                });
+                };
+                
+                pedido.Itens.Add(itemPedido);
+                total += precoBase * item.Quantidade;
             }
         }
         
+        pedido.ValorTotal = total;
+        
+        // Salvar usando o PedidoService (agora com banco)
         PedidoService.Add(pedido);
+        
         return View("PedidoConfirmado", pedido);
     }
     

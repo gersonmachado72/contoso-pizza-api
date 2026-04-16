@@ -18,6 +18,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    
+    // Inicializar PedidoService com o DbContext
+    PedidoService.Initialize(db);
 }
 
 if (app.Environment.IsDevelopment())
@@ -33,10 +36,3 @@ app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-// Inicializar PedidoService com o DbContext
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    PedidoService.Initialize(db);
-}
