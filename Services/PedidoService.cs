@@ -1,48 +1,68 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ContosoPizza.Data;
 using ContosoPizza.Models;
 
 namespace ContosoPizza.Services;
 
 public static class PedidoService
 {
-    private static List<Pedido> _pedidos = new();
-    private static int _nextId = 1;
+    private static AppDbContext? _context;
+
+    public static void Initialize(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public static List<Pedido> GetAll()
     {
-        return _pedidos.OrderByDescending(p => p.DataPedido).ToList();
+        if (_context == null) return new List<Pedido>();
+        return _context.Pedidos
+            .Include(p => p.Itens)
+            .OrderByDescending(p => p.DataPedido)
+            .ToList();
     }
 
     public static Pedido? Get(int id)
     {
-        return _pedidos.FirstOrDefault(p => p.Id == id);
+        if (_context == null) return null;
+        return _context.Pedidos
+            .Include(p => p.Itens)
+            .FirstOrDefault(p => p.Id == id);
     }
 
     public static void Add(Pedido pedido)
     {
-        pedido.Id = _nextId++;
-        pedido.DataPedido = DateTime.Now;
-        pedido.Status = "Preparando";
+        if (_context == null) return;
         
+        // Garantir que os itens estão vinculados
         if (pedido.Itens != null)
         {
-            pedido.ValorTotal = pedido.Itens.Sum(i => i.Subtotal);
+            foreach (var item in pedido.Itens)
+            {
+                item.Id = 0;
+                item.PedidoId = 0;
+            }
         }
         
-        _pedidos.Add(pedido);
+        _context.Pedidos.Add(pedido);
+        _context.SaveChanges();
     }
 
     public static void Update(Pedido pedido)
     {
-        var index = _pedidos.FindIndex(p => p.Id == pedido.Id);
-        if (index != -1) _pedidos[index] = pedido;
+        if (_context == null) return;
+        _context.Pedidos.Update(pedido);
+        _context.SaveChanges();
     }
 
     public static void Delete(int id)
     {
+        if (_context == null) return;
         var pedido = Get(id);
-        if (pedido != null) _pedidos.Remove(pedido);
+        if (pedido != null)
+        {
+            _context.Pedidos.Remove(pedido);
+            _context.SaveChanges();
+        }
     }
 }
