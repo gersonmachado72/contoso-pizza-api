@@ -12,15 +12,15 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=contosopizza.db"));
 
+// Registrar PedidoService como Scoped (uma instância por requisição)
+builder.Services.AddScoped<PedidoService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
-    
-    // Inicializar PedidoService com o DbContext
-    PedidoService.Initialize(db);
 }
 
 if (app.Environment.IsDevelopment())
