@@ -25,7 +25,7 @@ else
         options.UseSqlite("Data Source=contosopizza.db"));
 }
 
-// Configurar Identity (autenticação)
+// Configurar Identity
 builder.Services.AddIdentity<Usuario, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
@@ -44,7 +44,7 @@ builder.Services.AddScoped<PedidoService>();
 
 var app = builder.Build();
 
-// Criar banco de dados e usuário admin padrão
+// Criar banco de dados e usuário admin
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -53,13 +53,13 @@ using (var scope = app.Services.CreateScope())
     
     db.Database.EnsureCreated();
     
-    // Criar role Admin se não existir
+    // Criar role Admin
     if (!await roleManager.RoleExistsAsync("Admin"))
     {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
     }
     
-    // Criar usuário admin padrão se não existir
+    // Criar usuário admin
     var adminEmail = "admin@contosopizza.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
@@ -87,7 +87,6 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 
-// 🔥 IMPORTANTE: Adicionar autenticação e autorização
 app.UseAuthentication();
 app.UseAuthorization();
 

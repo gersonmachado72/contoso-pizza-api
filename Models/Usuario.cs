@@ -6,5 +6,5 @@ public class Usuario : IdentityUser
 {
     public string? NomeCompleto { get; set; }
     public DateTime DataCadastro { get; set; } = DateTime.Now;
-    public bool IsAdmin { get; set; } = true; // Por padrão, admin
+    public bool IsAdmin { get; set; } = true;
 }
