@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using ContosoPizza.Data;
 using ContosoPizza.Services;
 
@@ -25,17 +24,6 @@ else
         options.UseSqlite("Data Source=contosopizza.db"));
 }
 
-// Autenticação simples por cookie
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Home/Login";
-        options.LogoutPath = "/Home/Logout";
-        options.AccessDeniedPath = "/Home/AcessoNegado";
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    });
-
-builder.Services.AddAuthorization();
 builder.Services.AddScoped<PedidoService>();
 
 var app = builder.Build();
@@ -54,9 +42,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");

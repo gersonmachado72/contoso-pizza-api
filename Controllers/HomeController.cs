@@ -1,8 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Security.Claims;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
 
@@ -20,72 +16,6 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         return View();
-    }
-
-    [HttpGet]
-    public IActionResult Login(string returnUrl = null)
-    {
-        ViewBag.ReturnUrl = returnUrl;
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Login(string email, string password, string returnUrl = null)
-    {
-        // Login fixo (admin@contosopizza.com / Admin@123)
-        if (email == "admin@contosopizza.com" && password == "Admin@123")
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, email),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-            
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-            
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-            return RedirectToAction("AdminPedidos");
-        }
-        
-        ViewBag.Error = "E-mail ou senha inválidos!";
-        return View();
-    }
-
-    public async Task<IActionResult> Logout()
-    {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToAction("Index");
-    }
-
-    public IActionResult AcessoNegado()
-    {
-        return View();
-    }
-
-    [Authorize]
-    public IActionResult AdminPedidos()
-    {
-        var pedidos = _pedidoService.GetAll();
-        return View(pedidos);
-    }
-
-    [Authorize]
-    [HttpPost]
-    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
-    {
-        var pedido = _pedidoService.Get(id);
-        if (pedido != null)
-        {
-            pedido.Status = status;
-            pedido.EntregadorNome = entregador;
-            pedido.PagamentoConfirmado = pagamentoConfirmado;
-            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
-            _pedidoService.Update(pedido);
-        }
-        return RedirectToAction("AdminPedidos");
     }
 
     [HttpPost]
@@ -140,6 +70,27 @@ public class HomeController : Controller
         _pedidoService.Add(pedido);
         
         return View("PedidoConfirmado", pedido);
+    }
+    
+    public IActionResult AdminPedidos()
+    {
+        var pedidos = _pedidoService.GetAll();
+        return View(pedidos);
+    }
+    
+    [HttpPost]
+    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
+    {
+        var pedido = _pedidoService.Get(id);
+        if (pedido != null)
+        {
+            pedido.Status = status;
+            pedido.EntregadorNome = entregador;
+            pedido.PagamentoConfirmado = pagamentoConfirmado;
+            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
+            _pedidoService.Update(pedido);
+        }
+        return RedirectToAction("AdminPedidos");
     }
 }
 
