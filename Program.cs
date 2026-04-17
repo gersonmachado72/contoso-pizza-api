@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using ContosoPizza.Data;
 using ContosoPizza.Services;
 
@@ -25,57 +25,25 @@ else
         options.UseSqlite("Data Source=contosopizza.db"));
 }
 
-// Configurar Identity
-builder.Services.AddIdentity<Usuario, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+// Autenticação simples por cookie
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Home/Login";
+        options.LogoutPath = "/Home/Logout";
+        options.AccessDeniedPath = "/Home/AcessoNegado";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
 
-// Configurar cookie de autenticação
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Home/Login";
-    options.LogoutPath = "/Home/Logout";
-    options.AccessDeniedPath = "/Home/AcessoNegado";
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
-    options.SlidingExpiration = true;
-});
-
+builder.Services.AddAuthorization();
 builder.Services.AddScoped<PedidoService>();
 
 var app = builder.Build();
 
-// Criar banco de dados e usuário admin
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<Usuario>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    
     db.Database.EnsureCreated();
-    
-    // Criar role Admin
-    if (!await roleManager.RoleExistsAsync("Admin"))
-    {
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-    }
-    
-    // Criar usuário admin
-    var adminEmail = "admin@contosopizza.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
-        adminUser = new Usuario
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            NomeCompleto = "Administrador",
-            IsAdmin = true,
-            EmailConfirmed = true
-        };
-        await userManager.CreateAsync(adminUser, "Admin@123");
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-        Console.WriteLine("✅ Usuário admin criado: admin@contosopizza.com / Admin@123");
-    }
 }
 
 if (app.Environment.IsDevelopment())
