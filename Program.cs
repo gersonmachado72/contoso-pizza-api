@@ -9,9 +9,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// 🔥 IGNORAR COMPLETAMENTE O POSTGRESQL - USAR SQLITE
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=contosopizza.db"));
+// Configurar banco de dados
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    Console.WriteLine("=== USANDO POSTGRESQL ===");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(databaseUrl));
+}
+else
+{
+    Console.WriteLine("=== USANDO SQLITE ===");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite("Data Source=contosopizza.db"));
+}
 
 builder.Services.AddScoped<PedidoService>();
 
@@ -21,7 +32,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
-    Console.WriteLine("✅ Banco SQLite criado com sucesso!");
+    Console.WriteLine("✅ Banco de dados criado/verificado");
 }
 
 if (app.Environment.IsDevelopment())
