@@ -9,18 +9,34 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=contosopizza.db"));
+// 🔥 CONFIGURAÇÃO ESPECÍFICA PARA O RENDER
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-// Registrar PedidoService como Scoped (uma instância por requisição)
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    // Ambiente de produção (Render) - Usar PostgreSQL
+    Console.WriteLine("=== AMBIENTE DE PRODUÇÃO - USANDO POSTGRESQL ===");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(databaseUrl));
+}
+else
+{
+    // Ambiente de desenvolvimento (local) - Usar SQLite
+    Console.WriteLine("=== AMBIENTE DE DESENVOLVIMENTO - USANDO SQLITE ===");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite("Data Source=contosopizza.db"));
+}
+
 builder.Services.AddScoped<PedidoService>();
 
 var app = builder.Build();
 
+// Criar banco de dados e tabelas
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    Console.WriteLine("✅ Banco de dados verificado/criado");
 }
 
 if (app.Environment.IsDevelopment())
