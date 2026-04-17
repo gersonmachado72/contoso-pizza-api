@@ -19,6 +19,13 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
         }
+        .pedido-detalhes {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
         .btn-voltar, .btn-admin {
             display: inline-block;
             background: #e67e22;
@@ -29,6 +36,7 @@
             margin: 10px;
         }
         .btn-admin { background: #3498db; }
+        .status { background: #f39c12; display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; }
     </style>
 </head>
 <body>
@@ -46,9 +54,12 @@
             
             <h3>📋 Itens do pedido:</h3>
             <ul>
-                @foreach (var item in Model?.Itens ?? new List<ItemPedido>())
+                @if (Model?.Itens != null)
                 {
-                    <li>🍕 @item.Quantidade x Pizza @item.Sabor (tamanho @item.Tamanho) - R$ @((item.Quantidade * item.PrecoUnitario).ToString("F2"))</li>
+                    @foreach (var item in Model.Itens)
+                    {
+                        <li>🍕 @item.Quantidade x Pizza @item.Sabor (tamanho @item.Tamanho) - R$ @((item.Quantidade * item.PrecoUnitario).ToString("F2"))</li>
+                    }
                 }
             </ul>
             
