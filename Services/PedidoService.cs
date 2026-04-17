@@ -30,7 +30,6 @@ public class PedidoService
 
     public void Add(Pedido pedido)
     {
-        // Garantir que DataPedido está preenchida
         if (pedido.DataPedido == DateTime.MinValue)
         {
             pedido.DataPedido = DateTime.Now;

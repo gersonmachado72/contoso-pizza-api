@@ -9,8 +9,7 @@ public class Pedido
     [Key]
     public int Id { get; set; }
     
-    [Required(ErrorMessage = "Nome do cliente é obrigatório")]
-    [MinLength(3)]
+    [Required]
     public string? NomeCliente { get; set; }
     
     [Required]
@@ -30,6 +29,5 @@ public class Pedido
     public bool PagamentoConfirmado { get; set; }
     public int RestaurantId { get; set; } = 1;
     
-    // Relacionamento correto
     public virtual ICollection<ItemPedido>? Itens { get; set; }
 }

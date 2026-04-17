@@ -3,38 +3,14 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedido Confirmado - ContosoPizza</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .confirmacao-container {
-            max-width: 800px;
-            margin: 50px auto;
-            background: white;
-            border-radius: 25px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        .pedido-detalhes {
-            text-align: left;
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-        .btn-voltar, .btn-admin {
-            display: inline-block;
-            background: #e67e22;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 40px;
-            text-decoration: none;
-            margin: 10px;
-        }
+        .confirmacao-container { max-width: 800px; margin: 50px auto; background: white; border-radius: 25px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; }
+        .btn-voltar, .btn-admin { display: inline-block; background: #e67e22; color: white; padding: 12px 30px; border-radius: 40px; text-decoration: none; margin: 10px; }
         .btn-admin { background: #3498db; }
         .status { background: #f39c12; display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; }
     </style>
@@ -43,7 +19,6 @@
     <div class="confirmacao-container">
         <h1>✅ Pedido Confirmado!</h1>
         <p>Obrigado por escolher a ContosoPizza! 🍕</p>
-        
         <div class="pedido-detalhes">
             <p><strong>📝 Pedido #:</strong> @Model?.Id</p>
             <p><strong>👤 Cliente:</strong> @Model?.NomeCliente</p>
@@ -51,7 +26,6 @@
             <p><strong>📞 Telefone:</strong> @Model?.Telefone</p>
             <p><strong>📅 Data:</strong> @Model?.DataPedido.ToString("dd/MM/yyyy HH:mm")</p>
             <p><strong>⚡ Status:</strong> <span class="status">@Model?.Status</span></p>
-            
             <h3>📋 Itens do pedido:</h3>
             <ul>
                 @if (Model?.Itens != null)
@@ -62,12 +36,9 @@
                     }
                 }
             </ul>
-            
             <h3>💰 Valor Total: R$ @Model?.ValorTotal.ToString("F2")</h3>
         </div>
-        
         <p>⏱️ Acompanhe seu pedido pelo número #@Model?.Id</p>
-        
         <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
         <a href="/Home/AdminPedidos" class="btn-admin">📊 Acompanhar Pedidos</a>
     </div>

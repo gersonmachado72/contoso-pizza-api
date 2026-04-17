@@ -6,11 +6,10 @@ public class Pizza
 {
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "O nome da pizza é obrigatório")]
-    [MinLength(3, ErrorMessage = "O nome deve ter pelo menos 3 caracteres")]
+    [Required]
     public string? Name { get; set; }
 
-    [Range(0.01, double.MaxValue, ErrorMessage = "O preço deve ser maior que zero")]
+    [Range(0.01, double.MaxValue)]
     public decimal Price { get; set; }
 
     public bool IsVegetarian { get; set; }

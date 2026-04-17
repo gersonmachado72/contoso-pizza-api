@@ -75,7 +75,6 @@
         let pizzas = [];
         let selectedPayment = "Dinheiro";
 
-        // Seleção de pagamento
         document.querySelectorAll('.payment-option').forEach(opt => {
             opt.addEventListener('click', () => {
                 document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
@@ -85,7 +84,6 @@
             if (opt.dataset.payment === selectedPayment) opt.classList.add('selected');
         });
 
-        // Adicionar item de pizza
         function adicionarItem() {
             const container = document.getElementById('itensPedido');
             const itemDiv = document.createElement('div');
@@ -107,7 +105,6 @@
             container.appendChild(itemDiv);
         }
 
-        // Finalizar pedido
         async function finalizarPedido() {
             const itens = [];
             document.querySelectorAll('.item-pedido').forEach(item => {
@@ -161,7 +158,6 @@
             }
         }
 
-        // Carregar cardápio
         async function carregarCardapio() {
             const container = document.getElementById('pizzas-list');
             container.innerHTML = "Carregando...";
