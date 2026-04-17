@@ -4,12 +4,13 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - ContosoPizza</title>
     <link rel="stylesheet" href="/css/style.css">
-     <style>
+    <style>
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .pedido-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: bold; }
@@ -18,96 +19,58 @@
         .status-Finalizado { background: #27ae60; color: white; }
         .badge-pago { background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; }
         .badge-pendente { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 12px; }
-        
-        /* ESTILOS CORRETOS PARA OS BOTÕES */
-        .btn-voltar {
-            display: inline-block;
-            background: #e67e22;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            margin-bottom: 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .btn-voltar:hover { 
-            background: #d35400; 
-            color: white;
-        }
-        
-        .btn-atualizar {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .btn-atualizar:hover { 
-            background: #219a52; 
-        }
-        
-        .btn-admin {
-            display: inline-block;
-            background: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            margin-left: 10px;
-        }
-        .btn-admin:hover { 
-            background: #2980b9; 
-        }
-        
-        select, input[type="text"] {
-            padding: 8px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            margin: 5px;
-        }
-        
-        label {
-            margin-left: 10px;
-        }
+        .btn-voltar { background: #e67e22; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
+        .btn-logout { background: #e74c3c; color: white; padding: 8px 20px; border-radius: 25px; text-decoration: none; margin-left: 10px; }
+        .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
-        <h1>📊 Gerenciamento de Pedidos</h1>        
+        <div class="header-admin">
+            <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
+            <div>
+                <span>Bem-vindo, @User.Identity?.Name!</span>
+                <a href="/Home/Logout" class="btn-logout">Sair</a>
+            </div>
+        </div>
         
-        @foreach (var p in Model)
+        <h1>📊 Gerenciamento de Pedidos</h1>
+        <p>Total de pedidos: @Model.Count</p>
+        
+        @if (!Model.Any())
+        {
+            <p>Nenhum pedido realizado ainda.</p>
+        }
+        
+        @foreach (var pedido in Model)
         {
             <div class="pedido-card">
-                <div><strong>Pedido #@p.Id</strong> - @p.DataPedido.ToString("dd/MM/yyyy HH:mm")</div>
-                <div><strong>Cliente:</strong> @p.NomeCliente</div>
-                <div><strong>Endereço:</strong> @p.Endereco</div>
-                <div><strong>Telefone:</strong> @p.Telefone</div>
-                <div><strong>Observação:</strong> @(string.IsNullOrEmpty(p.Observacao) ? "Nenhuma" : p.Observacao)</div>
-                <div><strong>Pagamento:</strong> @p.MetodoPagamento 
-                    <span class="@(p.PagamentoConfirmado ? "badge-pago" : "badge-pendente")">
-                        @(p.PagamentoConfirmado ? "✅ Pago" : "⏳ Pendente")
+                <div><strong>Pedido #@pedido.Id</strong> - @pedido.DataPedido.ToString("dd/MM/yyyy HH:mm")</div>
+                <div><strong>Cliente:</strong> @pedido.NomeCliente</div>
+                <div><strong>Endereço:</strong> @pedido.Endereco</div>
+                <div><strong>Telefone:</strong> @pedido.Telefone</div>
+                <div><strong>Observação:</strong> @(string.IsNullOrEmpty(pedido.Observacao) ? "Nenhuma" : pedido.Observacao)</div>
+                <div><strong>Pagamento:</strong> @pedido.MetodoPagamento 
+                    <span class="@(pedido.PagamentoConfirmado ? "badge-pago" : "badge-pendente")">
+                        @(pedido.PagamentoConfirmado ? "✅ Pago" : "⏳ Pendente")
                     </span>
                 </div>
-                <div><strong>Status:</strong> <span class="status status-@(p.Status?.Replace(" ", "_"))">@p.Status</span></div>
-                <div><strong>Total:</strong> R$ @p.ValorTotal.ToString("F2")</div>
+                <div><strong>Status:</strong> <span class="status status-@(pedido.Status?.Replace(" ", "_"))">@pedido.Status</span></div>
+                <div><strong>Entregador:</strong> @(string.IsNullOrEmpty(pedido.EntregadorNome) ? "Não atribuído" : pedido.EntregadorNome)</div>
+                <div><strong>Total:</strong> R$ @pedido.ValorTotal.ToString("F2")</div>
                 
                 <form method="post" action="/Home/AtualizarStatus" style="margin-top: 15px;">
-                    <input type="hidden" name="id" value="@p.Id">
+                    <input type="hidden" name="id" value="@pedido.Id">
                     <select name="status">
-                        <option value="Preparando" @(p.Status == "Preparando" ? "selected" : "")>🔧 Preparando</option>
-                        <option value="Saiu para entrega" @(p.Status == "Saiu para entrega" ? "selected" : "")>🚚 Saiu para entrega</option>
-                        <option value="Finalizado" @(p.Status == "Finalizado" ? "selected" : "")>✅ Finalizado</option>
+                        <option value="Preparando" @(pedido.Status == "Preparando" ? "selected" : "")>🔧 Preparando</option>
+                        <option value="Saiu para entrega" @(pedido.Status == "Saiu para entrega" ? "selected" : "")>🚚 Saiu para entrega</option>
+                        <option value="Finalizado" @(pedido.Status == "Finalizado" ? "selected" : "")>✅ Finalizado</option>
                     </select>
-                    <input type="text" name="entregador" placeholder="Entregador" value="@p.EntregadorNome" style="margin-left: 10px;">
-                    <label style="margin-left: 10px;">
-                        <input type="checkbox" name="pagamentoConfirmado" value="true" @(p.PagamentoConfirmado ? "checked" : "")> Pagamento confirmado
+                    <input type="text" name="entregador" placeholder="Nome do entregador" value="@pedido.EntregadorNome">
+                    <label>
+                        <input type="checkbox" name="pagamentoConfirmado" value="true" @(pedido.PagamentoConfirmado ? "checked" : "")> Pagamento confirmado
                     </label>
-                    <button type="submit" class="btn-enviar" style="padding: 5px 15px; margin-left: 10px;">Atualizar</button>
+                    <button type="submit" class="btn-atualizar" style="background:#27ae60; color:white; border:none; padding:5px 15px; border-radius:20px;">Atualizar</button>
                 </form>
             </div>
         }

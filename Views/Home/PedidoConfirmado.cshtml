@@ -1,5 +1,4 @@
-@using ContosoPizza.Models
-@model Pedido
+@model ContosoPizza.Models.Pedido
 @{
     Layout = null;
 }
@@ -20,11 +19,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
         }
-        
-        .confirmacao-container h1 { color: #27ae60; margin-bottom: 20px; }
-        .pedido-detalhes { text-align: left; background: #f9f9f9; padding: 20px; border-radius: 15px; margin: 20px 0; }
-        .itens-lista { list-style: none; padding: 0; }
-        .itens-lista li { padding: 8px 0; border-bottom: 1px solid #ddd; }
         .btn-voltar, .btn-admin {
             display: inline-block;
             background: #e67e22;
@@ -33,12 +27,8 @@
             border-radius: 40px;
             text-decoration: none;
             margin: 10px;
-            transition: background 0.3s;
         }
         .btn-admin { background: #3498db; }
-        .btn-voltar:hover { background: #d35400; }
-        .btn-admin:hover { background: #2980b9; }
-        .status { background: #f39c12; display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; }
     </style>
 </head>
 <body>
@@ -47,25 +37,25 @@
         <p>Obrigado por escolher a ContosoPizza! 🍕</p>
         
         <div class="pedido-detalhes">
-            <p><strong>📝 Pedido #:</strong> @Model.Id</p>
-            <p><strong>👤 Cliente:</strong> @Model.NomeCliente</p>
-            <p><strong>📍 Endereço:</strong> @Model.Endereco</p>
-            <p><strong>📞 Telefone:</strong> @Model.Telefone</p>
-            <p><strong>📅 Data:</strong> @Model.DataPedido.ToString("dd/MM/yyyy HH:mm")</p>
-            <p><strong>⚡ Status:</strong> <span class="status">@Model.Status</span></p>
+            <p><strong>📝 Pedido #:</strong> @Model?.Id</p>
+            <p><strong>👤 Cliente:</strong> @Model?.NomeCliente</p>
+            <p><strong>📍 Endereço:</strong> @Model?.Endereco</p>
+            <p><strong>📞 Telefone:</strong> @Model?.Telefone</p>
+            <p><strong>📅 Data:</strong> @Model?.DataPedido.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>⚡ Status:</strong> <span class="status">@Model?.Status</span></p>
             
             <h3>📋 Itens do pedido:</h3>
-            <ul class="itens-lista">
-                @foreach (var item in Model.Itens)
+            <ul>
+                @foreach (var item in Model?.Itens ?? new List<ItemPedido>())
                 {
-                    <li>🍕 @item.Quantidade x Pizza @item.Sabor (tamanho @item.Tamanho) - R$ @item.Subtotal.ToString("F2")</li>
+                    <li>🍕 @item.Quantidade x Pizza @item.Sabor (tamanho @item.Tamanho) - R$ @((item.Quantidade * item.PrecoUnitario).ToString("F2"))</li>
                 }
             </ul>
             
-            <h3>💰 Valor Total: R$ @Model.ValorTotal.ToString("F2")</h3>
+            <h3>💰 Valor Total: R$ @Model?.ValorTotal.ToString("F2")</h3>
         </div>
         
-        <p>⏱️ Acompanhe seu pedido pelo número #@Model.Id</p>
+        <p>⏱️ Acompanhe seu pedido pelo número #@Model?.Id</p>
         
         <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
         <a href="/Home/AdminPedidos" class="btn-admin">📊 Acompanhar Pedidos</a>

@@ -1,0 +1,54 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ContosoPizza Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-login { background: #e67e22; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; cursor: pointer; }
+        .btn-login:hover { background: #d35400; }
+        .error { color: red; margin-bottom: 15px; }
+    </style>
+</head>
+<body style="background: #333;">
+    <div class="login-container">
+        <h1 style="text-align:center;">🍕 ContosoPizza</h1>
+        <h2 style="text-align:center;">Área Administrativa</h2>
+        
+        @if (ViewBag.Error != null)
+        {
+            <div class="error">@ViewBag.Error</div>
+        }
+        
+        <form method="post" action="/Home/Login">
+            <div class="form-group">
+                <label>E-mail:</label>
+                <input type="email" name="email" class="form-control" required autofocus />
+            </div>
+            <div class="form-group">
+                <label>Senha:</label>
+                <input type="password" name="password" class="form-control" required />
+            </div>
+            <button type="submit" class="btn-login">Entrar</button>
+        </form>
+        
+        <div style="text-align:center; margin-top:20px;">
+            <a href="/Home/Index">← Voltar ao Cardápio</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
 
@@ -6,10 +8,17 @@ namespace ContosoPizza.Controllers;
 
 public class HomeController : Controller
 {
+    private readonly SignInManager<Usuario> _signInManager;
+    private readonly UserManager<Usuario> _userManager;
     private readonly PedidoService _pedidoService;
 
-    public HomeController(PedidoService pedidoService)
+    public HomeController(
+        SignInManager<Usuario> signInManager,
+        UserManager<Usuario> userManager,
+        PedidoService pedidoService)
     {
+        _signInManager = signInManager;
+        _userManager = userManager;
         _pedidoService = pedidoService;
     }
 
@@ -18,9 +27,70 @@ public class HomeController : Controller
         return View();
     }
 
+    [HttpGet]
+    public IActionResult Login(string returnUrl = null)
+    {
+        ViewBag.ReturnUrl = returnUrl;
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Login(string email, string password, string returnUrl = null)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user != null)
+        {
+            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+            if (result.Succeeded)
+            {
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction("AdminPedidos");
+            }
+        }
+        
+        ViewBag.Error = "E-mail ou senha inválidos!";
+        return View();
+    }
+
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Index");
+    }
+
+    public IActionResult AcessoNegado()
+    {
+        return View();
+    }
+
+    [Authorize] // 🔒 Protegido - só acessível com login
+    public IActionResult AdminPedidos()
+    {
+        var pedidos = _pedidoService.GetAll();
+        return View(pedidos);
+    }
+
+    [HttpPost]
+    [Authorize] // 🔒 Protegido
+    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
+    {
+        var pedido = _pedidoService.Get(id);
+        if (pedido != null)
+        {
+            pedido.Status = status;
+            pedido.EntregadorNome = entregador;
+            pedido.PagamentoConfirmado = pagamentoConfirmado;
+            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
+            _pedidoService.Update(pedido);
+        }
+        return RedirectToAction("AdminPedidos");
+    }
+
     [HttpPost]
     public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
     {
+        // Este método continua público (clientes podem fazer pedidos sem login)
         if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
         {
             return BadRequest("Dados do pedido inválidos");
@@ -55,45 +125,21 @@ public class HomeController : Controller
                     else if (item.Tamanho == "Grande") precoBase += 10;
                 }
                 
-                var itemPedido = new ItemPedido
+                pedido.Itens.Add(new ItemPedido
                 {
                     Sabor = item.Sabor,
                     Tamanho = item.Tamanho,
                     Quantidade = item.Quantidade,
                     PrecoUnitario = precoBase
-                };
-                
-                pedido.Itens.Add(itemPedido);
+                });
                 total += precoBase * item.Quantidade;
             }
         }
         
         pedido.ValorTotal = total;
-        
         _pedidoService.Add(pedido);
         
         return View("PedidoConfirmado", pedido);
-    }
-    
-    public IActionResult AdminPedidos()
-    {
-        var pedidos = _pedidoService.GetAll();
-        return View(pedidos);
-    }
-    
-    [HttpPost]
-    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
-    {
-        var pedido = _pedidoService.Get(id);
-        if (pedido != null)
-        {
-            pedido.Status = status;
-            pedido.EntregadorNome = entregador;
-            pedido.PagamentoConfirmado = pagamentoConfirmado;
-            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
-            _pedidoService.Update(pedido);
-        }
-        return RedirectToAction("AdminPedidos");
     }
 }
 
