@@ -9,12 +9,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// 🔥 FORÇAR POSTGRESQL - IGNORAR SQLITE
-var connectionString = "Host=dpg-d7drr967r5hc73d6bpe0-a.ohio-postgres.render.com;Port=5432;Database=contoso_pizza_db;Username=contoso_pizza_db_user;Password=ZWlW2qi9kWyphx4IOON94nEKI77Xi3B1;SSL Mode=Require;Trust Server Certificate=true;";
-
-Console.WriteLine("=== USANDO POSTGRESQL FIXO ===");
+// 🔥 USAR SQLITE (FUNCIONA PERFEITAMENTE)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlite("Data Source=contosopizza.db"));
 
 builder.Services.AddScoped<PedidoService>();
 
@@ -24,7 +21,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
-    Console.WriteLine("✅ Banco PostgreSQL criado/verificado");
+    Console.WriteLine("✅ Banco SQLite criado/verificado");
 }
 
 if (app.Environment.IsDevelopment())
