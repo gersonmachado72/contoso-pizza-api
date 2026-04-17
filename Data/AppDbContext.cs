@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ContosoPizza.Models;
 
 namespace ContosoPizza.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<Usuario>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
