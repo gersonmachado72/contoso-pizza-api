@@ -4,9 +4,10 @@
     Layout = null;
 }
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - ContosoPizza</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
@@ -18,13 +19,21 @@
         .status-Finalizado { background: #27ae60; color: white; }
         .badge-pago { background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; }
         .badge-pendente { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 12px; }
-        .btn-voltar { display: inline-block; background: #e67e22; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; margin-bottom: 20px; }
-        .btn-atualizar { background: #27ae60; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+        .btn-voltar { background: #e67e22; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
+        .btn-logout { background: #e74c3c; color: white; padding: 8px 20px; border-radius: 25px; text-decoration: none; margin-left: 10px; }
+        .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
+        <div class="header-admin">
+            <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
+            <div>
+                <span>Bem-vindo, @User.Identity?.Name!</span>
+                <a href="/Home/Logout" class="btn-logout">Sair</a>
+            </div>
+        </div>
+        
         <h1>📊 Gerenciamento de Pedidos</h1>
         <p>Total de pedidos: @Model.Count</p>
         
@@ -61,7 +70,7 @@
                     <label>
                         <input type="checkbox" name="pagamentoConfirmado" value="true" @(pedido.PagamentoConfirmado ? "checked" : "")> Pagamento confirmado
                     </label>
-                    <button type="submit" class="btn-atualizar">Atualizar</button>
+                    <button type="submit" class="btn-atualizar" style="background:#27ae60; color:white; border:none; padding:5px 15px; border-radius:20px;">Atualizar</button>
                 </form>
             </div>
         }
