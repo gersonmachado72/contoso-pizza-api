@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ContosoPizza.Models;
 
 namespace ContosoPizza.Data;
 
-public class AppDbContext : IdentityDbContext<Usuario>
+public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -14,4 +13,5 @@ public class AppDbContext : IdentityDbContext<Usuario>
     public DbSet<Pedido> Pedidos { get; set; }
     public DbSet<ItemPedido> ItensPedido { get; set; }
     public DbSet<Avaliacao> Avaliacoes { get; set; }
+    // Usuario não precisa de DbSet (usamos autenticação por cookie simples)
 }
