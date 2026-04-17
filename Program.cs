@@ -9,20 +9,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// Configurar banco de dados (SQLite local ou PostgreSQL no Render)
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (!string.IsNullOrEmpty(databaseUrl))
-{
-    Console.WriteLine("=== AMBIENTE DE PRODUÇÃO - USANDO POSTGRESQL ===");
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(databaseUrl));
-}
-else
-{
-    Console.WriteLine("=== AMBIENTE DE DESENVOLVIMENTO - USANDO SQLITE ===");
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite("Data Source=contosopizza.db"));
-}
+// 🔥 FORÇAR USO DO SQLITE (ignorar completamente PostgreSQL)
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=contosopizza.db"));
 
 builder.Services.AddScoped<PedidoService>();
 
@@ -32,6 +21,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    Console.WriteLine("✅ Banco SQLite criado/verificado");
 }
 
 if (app.Environment.IsDevelopment())
