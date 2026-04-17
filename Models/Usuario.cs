@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace ContosoPizza.Models;
 
-public class Usuario : IdentityUser
+public class Usuario
 {
+    public int Id { get; set; }
+    public string? Email { get; set; }
+    public string? Senha { get; set; }
     public string? NomeCompleto { get; set; }
-    public DateTime DataCadastro { get; set; } = DateTime.Now;
-    public bool IsAdmin { get; set; } = true; // Por padrão, admin
+    public bool IsAdmin { get; set; } = true;
 }

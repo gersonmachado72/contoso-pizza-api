@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
 
@@ -8,17 +10,10 @@ namespace ContosoPizza.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly SignInManager<Usuario> _signInManager;
-    private readonly UserManager<Usuario> _userManager;
     private readonly PedidoService _pedidoService;
 
-    public HomeController(
-        SignInManager<Usuario> signInManager,
-        UserManager<Usuario> userManager,
-        PedidoService pedidoService)
+    public HomeController(PedidoService pedidoService)
     {
-        _signInManager = signInManager;
-        _userManager = userManager;
         _pedidoService = pedidoService;
     }
 
@@ -27,6 +22,7 @@ public class HomeController : Controller
         return View();
     }
 
+    // 🔐 Página de login
     [HttpGet]
     public IActionResult Login(string returnUrl = null)
     {
@@ -34,45 +30,58 @@ public class HomeController : Controller
         return View();
     }
 
+    // 🔐 Processar login
     [HttpPost]
     public async Task<IActionResult> Login(string email, string password, string returnUrl = null)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user != null)
+        // Credenciais fixas (admin@contosopizza.com / Admin@123)
+        if (email == "admin@contosopizza.com" && password == "Admin@123")
         {
-            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
-            if (result.Succeeded)
+            var claims = new List<Claim>
             {
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-                return RedirectToAction("AdminPedidos");
-            }
+                new Claim(ClaimTypes.Name, email),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, "Admin")
+            };
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+            return RedirectToAction("AdminPedidos");
         }
         
         ViewBag.Error = "E-mail ou senha inválidos!";
+        ViewBag.ReturnUrl = returnUrl;
         return View();
     }
 
+    // 🔐 Logout
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Index");
     }
 
+    // 🔐 Página de acesso negado
     public IActionResult AcessoNegado()
     {
         return View();
     }
 
-    [Authorize] // 🔒 Protegido - só acessível com login
+    // 🔒 Painel Admin - protegido
+    [Authorize]
     public IActionResult AdminPedidos()
     {
         var pedidos = _pedidoService.GetAll();
         return View(pedidos);
     }
 
+    // 🔒 Atualizar status - protegido
+    [Authorize]
     [HttpPost]
-    [Authorize] // 🔒 Protegido
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         var pedido = _pedidoService.Get(id);
@@ -87,10 +96,10 @@ public class HomeController : Controller
         return RedirectToAction("AdminPedidos");
     }
 
+    // 📝 Fazer pedido (público)
     [HttpPost]
     public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
     {
-        // Este método continua público (clientes podem fazer pedidos sem login)
         if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
         {
             return BadRequest("Dados do pedido inválidos");
