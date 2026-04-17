@@ -30,10 +30,10 @@ public class PedidoService
 
     public void Add(Pedido pedido)
     {
-        // Garantir que a data está preenchida
-        if (pedido.DataPedido == DateTime.MinValue)
+        // 🔥 CONVERTER PARA UTC
+        if (pedido.DataPedido.Kind != DateTimeKind.Utc)
         {
-            pedido.DataPedido = DateTime.Now;
+            pedido.DataPedido = DateTime.SpecifyKind(pedido.DataPedido, DateTimeKind.Utc);
         }
         
         _context.Pedidos.Add(pedido);

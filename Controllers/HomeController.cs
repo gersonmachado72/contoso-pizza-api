@@ -33,7 +33,7 @@ public class HomeController : Controller
             Telefone = pedidoVM.Telefone,
             Observacao = pedidoVM.Observacao ?? "",
             MetodoPagamento = pedidoVM.MetodoPagamento ?? "Dinheiro",
-            DataPedido = DateTime.Now,
+            DataPedido = DateTime.UtcNow, // 🔥 USAR UTC
             Status = "Preparando",
             PagamentoConfirmado = false,
             RestaurantId = 1,
@@ -87,7 +87,7 @@ public class HomeController : Controller
             pedido.Status = status;
             pedido.EntregadorNome = entregador;
             pedido.PagamentoConfirmado = pagamentoConfirmado;
-            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
+            if (status == "Finalizado") pedido.DataEntrega = DateTime.UtcNow;
             _pedidoService.Update(pedido);
         }
         return RedirectToAction("AdminPedidos");
