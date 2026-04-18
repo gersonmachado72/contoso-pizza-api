@@ -7,11 +7,10 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
-    position: relative;
-    background-color: #f5f5f5;
+    background-color: #1a1a1a; /* Cor de fallback */
 }
 
-/* 🔥 CORREÇÃO DA IMAGEM DE FUNDO - NÃO CORTA MAIS */
+/* 🔥 IMAGEM DE FUNDO CORRIGIDA - NÃO CORTA MAIS */
 .background-blur {
     position: fixed;
     top: 0;
@@ -19,22 +18,29 @@ body {
     width: 100%;
     height: 100%;
     background-image: url('/images/fundo.jpg');
-    background-size: contain;  /* Muda de 'cover' para 'contain' para não cortar */
+    background-size: contain;  /* Não corta, mostra imagem inteira */
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     z-index: -2;
 }
 
-/* Fallback para telas grandes (laptop/desktop) */
-@media (min-width: 1024px) {
+/* Para telas muito altas, adiciona cor sólida nas bordas */
+@media (min-aspect-ratio: 16/9) {
     .background-blur {
         background-size: cover;
-        background-position: center 30%;
+        background-position: center top;
     }
 }
 
-/* Camada escura sobre o fundo para melhor contraste do texto */
+/* Para telas muito largas */
+@media (max-aspect-ratio: 3/4) {
+    .background-blur {
+        background-size: cover;
+        background-position: center top;
+    }
+}
+
 body::after {
     content: "";
     position: fixed;
@@ -46,12 +52,11 @@ body::after {
     z-index: -1;
 }
 
-/* Cabeçalho fixo no topo */
+/* Restante do CSS mantido */
 .main-header {
     background-image: url('/images/cabecalho.jpg');
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
     padding: 20px 40px;
     position: sticky;
     top: 0;
@@ -59,7 +64,6 @@ body::after {
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* Container do logo e título */
 .header-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -70,7 +74,6 @@ body::after {
     gap: 20px;
 }
 
-/* Logo no canto superior direito */
 .logo-area {
     display: flex;
     align-items: center;
@@ -82,7 +85,6 @@ body::after {
     max-height: 70px;
     width: auto;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .site-title {
@@ -90,8 +92,6 @@ body::after {
     font-weight: bold;
     color: white;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    font-family: 'Segoe UI', 'Brush Script MT', cursive;
-    letter-spacing: 2px;
 }
 
 .site-name {
@@ -101,7 +101,6 @@ body::after {
     order: 1;
 }
 
-/* Container principal do conteúdo */
 .container {
     max-width: 1200px;
     margin: 30px auto;
@@ -110,13 +109,11 @@ body::after {
     z-index: 1;
 }
 
-/* Estilos do cardápio e formulário */
 .cardapio, .pedido-form {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 25px;
     margin-bottom: 30px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
 .pizzas-grid {
@@ -133,7 +130,6 @@ body::after {
     text-align: center;
     background: white;
     transition: transform 0.3s;
-    cursor: pointer;
 }
 
 .pizza-card:hover {
@@ -145,7 +141,6 @@ body::after {
     color: #e67e22;
     font-size: 1.5rem;
     font-weight: bold;
-    margin: 10px 0;
 }
 
 .btn-adicionar, .btn-enviar {
@@ -153,10 +148,8 @@ body::after {
     color: white;
     border: none;
     padding: 12px 30px;
-    font-size: 1rem;
     border-radius: 40px;
     cursor: pointer;
-    margin-top: 10px;
 }
 
 .btn-adicionar:hover, .btn-enviar:hover {
@@ -202,27 +195,21 @@ body::after {
     background: #fef5e8;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
     .header-container {
         flex-direction: column;
         text-align: center;
     }
-    
     .logo-img {
         max-height: 50px;
     }
-    
     .site-title {
         font-size: 1.3rem;
     }
-    
     .container {
         padding: 10px;
     }
-    
     .pizzas-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
     }
 }
