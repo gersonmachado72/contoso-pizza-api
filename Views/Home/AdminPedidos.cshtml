@@ -11,13 +11,12 @@
     <title>Admin - ContosoPizza</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
         .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .btn-voltar { background: #e67e22; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
         .btn-logout { background: #e74c3c; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
         .pedido-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         
-        /* CORREÇÃO: Usar @@media (com dois @@) para escapar no Razor */
         @@media (max-width: 768px) {
             .container { padding: 10px; }
             .header-admin { flex-direction: column; align-items: stretch; text-align: center; }
@@ -26,6 +25,7 @@
     </style>
 </head>
 <body>
+    <div class="background-blur"></div>
     <div class="container">
         <div class="header-admin">
             <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
