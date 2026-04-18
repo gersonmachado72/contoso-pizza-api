@@ -11,20 +11,18 @@ body {
     background-color: #f5f5f5;
 }
 
-/* Imagem de FUNDO com efeito transparente */
-body::before {
-    content: "";
+/* 🔥 CORREÇÃO DA IMAGEM DE FUNDO - NÃO CORTA MAIS */
+.background-blur {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-image: url('/images/fundo.jpg');
-    background-size: contain;
+    background-size: contain;  /* Muda de 'cover' para 'contain' para não cortar */
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    opacity: 0.75;  /* Efeito transparente (75% opaco, 25% transparente) */
     z-index: -2;
 }
 
@@ -44,7 +42,7 @@ body::after {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);  /* Escurece levemente */
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: -1;
 }
 
@@ -77,7 +75,7 @@ body::after {
     display: flex;
     align-items: center;
     gap: 15px;
-    order: 2;  /* Move para a direita */
+    order: 2;
 }
 
 .logo-img {
@@ -96,7 +94,6 @@ body::after {
     letter-spacing: 2px;
 }
 
-/* Título do site (lado esquerdo do cabeçalho) */
 .site-name {
     font-size: 1.8rem;
     color: white;
@@ -113,22 +110,13 @@ body::after {
     z-index: 1;
 }
 
-/* Estilos do cardápio */
+/* Estilos do cardápio e formulário */
 .cardapio, .pedido-form {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 25px;
     margin-bottom: 30px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    backdrop-filter: blur(2px);
-}
-
-.cardapio h2, .pedido-form h2 {
-    color: #d35400;
-    border-bottom: 2px solid #e67e22;
-    display: inline-block;
-    margin-bottom: 20px;
-    padding-bottom: 5px;
 }
 
 .pizzas-grid {
@@ -144,7 +132,7 @@ body::after {
     padding: 20px;
     text-align: center;
     background: white;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s;
     cursor: pointer;
 }
 
@@ -153,113 +141,65 @@ body::after {
     box-shadow: 0 12px 25px rgba(0,0,0,0.15);
 }
 
-.pizza-card h3 {
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 1.4rem;
-}
-
-.pizza-card .price {
+.price {
     color: #e67e22;
     font-size: 1.5rem;
     font-weight: bold;
     margin: 10px 0;
 }
 
-.pizza-card .badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    background: #f0f0f0;
-    color: #666;
+.btn-adicionar, .btn-enviar {
+    background: #e67e22;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1rem;
+    border-radius: 40px;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-/* Formulário de pedido */
+.btn-adicionar:hover, .btn-enviar:hover {
+    background: #d35400;
+}
+
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .form-group label {
     display: block;
     font-weight: bold;
-    margin-bottom: 8px;
-    color: #333;
+    margin-bottom: 5px;
 }
 
-.form-group input {
+.form-group input, .form-group textarea, .form-group select {
     width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: #e67e22;
-}
-
-/* Itens do pedido */
-.item-pedido {
-    background: #fef9f0;
-    padding: 20px;
-    margin: 15px 0;
-    border-radius: 12px;
-    border-left: 5px solid #e67e22;
-}
-
-.item-pedido select, .item-pedido input {
-    margin: 5px 10px 5px 0;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
+    padding: 10px;
+    border: 1px solid #ccc;
     border-radius: 8px;
 }
 
-.btn-adicionar {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 1rem;
+.item-pedido {
+    background: #fef9f0;
+    padding: 15px;
     margin: 10px 0;
+    border-radius: 10px;
+    border-left: 4px solid #e67e22;
 }
 
-.btn-adicionar:hover {
-    background: #219a52;
-}
-
-.btn-enviar {
-    background: #e67e22;
-    color: white;
-    border: none;
-    padding: 14px 35px;
-    font-size: 1.2rem;
-    border-radius: 40px;
+.payment-option {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 5px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
     cursor: pointer;
-    margin-top: 20px;
-    transition: background 0.3s;
 }
 
-.btn-enviar:hover {
-    background: #d35400;
-}
-
-.btn-remover {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 5px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.btn-remover:hover {
-    background: #c0392b;
+.payment-option.selected {
+    border-color: #e67e22;
+    background: #fef5e8;
 }
 
 /* Responsividade */
@@ -269,19 +209,20 @@ body::after {
         text-align: center;
     }
     
-    .logo-area {
-        order: 1;
-    }
-    
-    .site-name {
-        order: 2;
-    }
-    
     .logo-img {
         max-height: 50px;
     }
     
     .site-title {
         font-size: 1.3rem;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .pizzas-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
     }
 }
