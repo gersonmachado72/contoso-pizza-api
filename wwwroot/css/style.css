@@ -7,10 +7,10 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
-    background-color: #1a1a1a; /* Cor de fallback */
+    position: relative;
 }
 
-/* 🔥 IMAGEM DE FUNDO CORRIGIDA - NÃO CORTA MAIS */
+/* 🔥 IMAGEM DE FUNDO - MOSTRA A IMAGEM INTEIRA SEM CORTAR */
 .background-blur {
     position: fixed;
     top: 0;
@@ -18,38 +18,31 @@ body {
     width: 100%;
     height: 100%;
     background-image: url('/images/fundo.jpg');
-    background-size: contain;  /* Não corta, mostra imagem inteira */
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-color: #1a1a1a;
     z-index: -2;
 }
 
-/* Para telas muito altas, adiciona cor sólida nas bordas */
-@media (min-aspect-ratio: 16/9) {
-    .background-blur {
-        background-size: cover;
-        background-position: center top;
-    }
-}
-
-/* Para telas muito largas */
-@media (max-aspect-ratio: 3/4) {
-    .background-blur {
-        background-size: cover;
-        background-position: center top;
-    }
-}
-
-body::after {
+/* Camada escura sobre o fundo para melhor contraste dos textos */
+.background-blur::after {
     content: "";
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: -1;
+}
+
+/* Para telas muito largas (desktop) - usar cover para preencher */
+@media (min-aspect-ratio: 16/9) {
+    .background-blur {
+        background-size: cover;
+        background-position: center top;
+    }
 }
 
 /* Restante do CSS mantido */
