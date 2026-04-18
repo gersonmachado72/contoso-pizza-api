@@ -11,86 +11,17 @@
     <title>Admin - ContosoPizza</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        /* 🔥 CORREÇÃO DA IMAGEM DE FUNDO - APLICADA DIRETAMENTE */
-        body {
-            background-image: url('/images/fundo.jpg');
-            background-size: cover;
-            background-position: center top;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            min-height: 100vh;
-            position: relative;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .btn-voltar { background: #e67e22; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
+        .btn-logout { background: #e74c3c; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
+        .pedido-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         
-        /* Camada escura para contraste */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: -1;
-        }
-        
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header-admin { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .btn-voltar { 
-            background: #e67e22; 
-            color: white; 
-            padding: 10px 20px; 
-            border-radius: 25px; 
-            text-decoration: none; 
-            display: inline-block;
-        }
-        
-        .btn-logout { 
-            background: #e74c3c; 
-            color: white; 
-            padding: 10px 20px; 
-            border-radius: 25px; 
-            text-decoration: none; 
-            display: inline-block;
-        }
-        
-        .pedido-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            border-radius: 12px; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        /* Responsividade */
-        @media (max-width: 768px) {
+        /* CORREÇÃO: Usar @@media (com dois @@) para escapar no Razor */
+        @@media (max-width: 768px) {
             .container { padding: 10px; }
             .header-admin { flex-direction: column; align-items: stretch; text-align: center; }
             .btn-voltar, .btn-logout { text-align: center; }
-            body { background-attachment: scroll; }
-        }
-        
-        @media (min-width: 1024px) {
-            body { background-position: center 20%; }
-        }
-        
-        @media (min-width: 1440px) {
-            body { background-size: contain; background-position: center top; }
         }
     </style>
 </head>
