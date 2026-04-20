@@ -11,18 +11,16 @@ namespace ContosoPizza.Controllers;
 public class HomeController : Controller
 {
     private readonly PedidoService _pedidoService;
+    private readonly EmailService _emailService;
 
-    public HomeController(PedidoService pedidoService)
+    public HomeController(PedidoService pedidoService, EmailService emailService)
     {
         _pedidoService = pedidoService;
+        _emailService = emailService;
     }
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+    public IActionResult Index() => View();
 
-    // 🔐 Página de login
     [HttpGet]
     public IActionResult Login(string returnUrl = null)
     {
@@ -30,11 +28,9 @@ public class HomeController : Controller
         return View();
     }
 
-    // 🔐 Processar login
     [HttpPost]
     public async Task<IActionResult> Login(string email, string password, string returnUrl = null)
     {
-        // Credenciais fixas (admin@contosopizza.com / Admin@123)
         if (email == "admin@contosopizza.com" && password == "Admin@123")
         {
             var claims = new List<Claim>
@@ -45,33 +41,26 @@ public class HomeController : Controller
             };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
-
+            
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
+            
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
             return RedirectToAction("AdminPedidos");
         }
-
+        
         ViewBag.Error = "E-mail ou senha inválidos!";
-        ViewBag.ReturnUrl = returnUrl;
         return View();
     }
 
-    // 🔐 Logout
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Index");
     }
 
-    // 🔐 Página de acesso negado
-    public IActionResult AcessoNegado()
-    {
-        return View();
-    }
+    public IActionResult AcessoNegado() => View();
 
-    // 🔒 Painel Admin - protegido
     [Authorize]
     public IActionResult AdminPedidos()
     {
@@ -79,7 +68,6 @@ public class HomeController : Controller
         return View(pedidos);
     }
 
-    // 🔒 Atualizar status - protegido
     [Authorize]
     [HttpPost]
     public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
@@ -96,20 +84,18 @@ public class HomeController : Controller
         return RedirectToAction("AdminPedidos");
     }
 
-    // 📝 Fazer pedido (público)
     [HttpPost]
     public IActionResult FazerPedido([FromBody] PedidoViewModel pedidoVM)
     {
         if (pedidoVM == null || string.IsNullOrEmpty(pedidoVM.NomeCliente))
-        {
             return BadRequest("Dados do pedido inválidos");
-        }
-
+        
         var pedido = new Pedido
         {
             NomeCliente = pedidoVM.NomeCliente,
             Endereco = pedidoVM.Endereco,
             Telefone = pedidoVM.Telefone,
+            Email = pedidoVM.Email ?? "",
             Observacao = pedidoVM.Observacao ?? "",
             MetodoPagamento = pedidoVM.MetodoPagamento ?? "Dinheiro",
             DataPedido = DateTime.Now,
@@ -118,9 +104,8 @@ public class HomeController : Controller
             RestaurantId = 1,
             Itens = new List<ItemPedido>()
         };
-
+        
         decimal total = 0;
-
         if (pedidoVM.Itens != null)
         {
             foreach (var item in pedidoVM.Itens)
@@ -133,7 +118,6 @@ public class HomeController : Controller
                     if (item.Tamanho == "Média") precoBase += 5;
                     else if (item.Tamanho == "Grande") precoBase += 10;
                 }
-
                 pedido.Itens.Add(new ItemPedido
                 {
                     Sabor = item.Sabor,
@@ -144,21 +128,31 @@ public class HomeController : Controller
                 total += precoBase * item.Quantidade;
             }
         }
-
         pedido.ValorTotal = total;
         _pedidoService.Add(pedido);
-
-        // Enviar e-mail (opcional, não trava o fluxo)
-        _ = Task.Run(async () =>
+        
+        // Enviar e-mail para o cliente
+        if (!string.IsNullOrEmpty(pedidoVM.Email))
         {
-            try
+            _ = Task.Run(async () =>
             {
-                var emailService = HttpContext.RequestServices.GetRequiredService<EmailService>();
-                await emailService.EnviarConfirmacaoPedido(pedido.NomeCliente, pedido.NomeCliente, pedido.Id, pedido.ValorTotal);
-            }
-            catch { }
-        });
-
+                try
+                {
+                    await _emailService.EnviarConfirmacaoPedido(
+                        pedidoVM.Email, 
+                        pedidoVM.NomeCliente, 
+                        pedido.Id, 
+                        pedido.ValorTotal
+                    );
+                    Console.WriteLine($"E-mail enviado para {pedidoVM.Email}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
+                }
+            });
+        }
+        
         return View("PedidoConfirmado", pedido);
     }
 
@@ -169,13 +163,14 @@ public class HomeController : Controller
         var bytes = RelatorioService.GerarRelatorioVendasCSV(pedidos);
         return File(bytes, "text/csv", $"relatorio_pedidos_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
     }
-} 
+}
 
 public class PedidoViewModel
 {
     public string? NomeCliente { get; set; }
     public string? Endereco { get; set; }
     public string? Telefone { get; set; }
+    public string? Email { get; set; }
     public string? Observacao { get; set; }
     public string? MetodoPagamento { get; set; }
     public List<ItemPedidoVM>? Itens { get; set; }
