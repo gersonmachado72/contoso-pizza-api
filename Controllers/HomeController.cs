@@ -45,14 +45,14 @@ public class HomeController : Controller
             };
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
-            
+
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-            
+
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
             return RedirectToAction("AdminPedidos");
         }
-        
+
         ViewBag.Error = "E-mail ou senha inválidos!";
         ViewBag.ReturnUrl = returnUrl;
         return View();
@@ -104,7 +104,7 @@ public class HomeController : Controller
         {
             return BadRequest("Dados do pedido inválidos");
         }
-        
+
         var pedido = new Pedido
         {
             NomeCliente = pedidoVM.NomeCliente,
@@ -118,9 +118,9 @@ public class HomeController : Controller
             RestaurantId = 1,
             Itens = new List<ItemPedido>()
         };
-        
+
         decimal total = 0;
-        
+
         if (pedidoVM.Itens != null)
         {
             foreach (var item in pedidoVM.Itens)
@@ -133,7 +133,7 @@ public class HomeController : Controller
                     if (item.Tamanho == "Média") precoBase += 5;
                     else if (item.Tamanho == "Grande") precoBase += 10;
                 }
-                
+
                 pedido.Itens.Add(new ItemPedido
                 {
                     Sabor = item.Sabor,
@@ -144,10 +144,21 @@ public class HomeController : Controller
                 total += precoBase * item.Quantidade;
             }
         }
-        
+
         pedido.ValorTotal = total;
         _pedidoService.Add(pedido);
-        
+
+        // Enviar e-mail (opcional, não trava o fluxo)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var emailService = HttpContext.RequestServices.GetRequiredService<EmailService>();
+                await emailService.EnviarConfirmacaoPedido(pedido.NomeCliente, pedido.NomeCliente, pedido.Id, pedido.ValorTotal);
+            }
+            catch { }
+        });
+
         return View("PedidoConfirmado", pedido);
     }
 }
