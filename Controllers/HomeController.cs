@@ -11,10 +11,12 @@ namespace ContosoPizza.Controllers;
 public class HomeController : Controller
 {
     private readonly PedidoService _pedidoService;
+    private readonly EmailService _emailService;
 
-    public HomeController(PedidoService pedidoService)
+    public HomeController(PedidoService pedidoService, EmailService emailService)
     {
         _pedidoService = pedidoService;
+        _emailService = emailService;
     }
 
     public IActionResult Index() => View();
@@ -128,6 +130,19 @@ public class HomeController : Controller
         }
         pedido.ValorTotal = total;
         _pedidoService.Add(pedido);
+        
+        // Enviar e-mail em background (não trava o fluxo)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _emailService.EnviarConfirmacaoPedido(pedidoVM.Email, pedidoVM.NomeCliente, pedido.Id, pedido.ValorTotal);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro no envio de e-mail: {ex.Message}");
+            }
+        });
         
         return View("PedidoConfirmado", pedido);
     }

@@ -1,5 +1,8 @@
-using SendGrid;
-using SendGrid.Helpers.Mail;
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
 namespace ContosoPizza.Services;
@@ -17,36 +20,60 @@ public class EmailService
     {
         var apiKey = _configuration["SendGrid:ApiKey"];
         
-        // Se não tiver chave configurada, apenas loga e retorna true (não quebra o site)
         if (string.IsNullOrEmpty(apiKey))
         {
             Console.WriteLine($"⚠️ SendGrid não configurado. E-mail não enviado para {email}");
-            return true;
+            return false;
         }
 
         try
         {
-            var client = new SendGridClient(apiKey);
-            var from = new EmailAddress("contato@contosopizza.com", "ContosoPizza");
-            var to = new EmailAddress(email, nomeCliente);
-            var subject = $"Pedido #{pedidoId} confirmado!";
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
             
-            var htmlContent = $@"
-                <h1>🍕 Pedido Confirmado!</h1>
-                <p>Olá {nomeCliente}, seu pedido <strong>#{pedidoId}</strong> foi recebido e está sendo preparado.</p>
-                <p><strong>Total:</strong> R$ {total:F2}</p>
-                <p>Acompanhe pelo site: <a href='https://contoso-pizza-api.onrender.com/Home/AdminPedidos'>Clique aqui</a></p>
-                <p>Obrigado por escolher a ContosoPizza!</p>
-            ";
-
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlContent);
-            var response = await client.SendEmailAsync(msg);
+            var content = new
+            {
+                personalizations = new[]
+                {
+                    new
+                    {
+                        to = new[] { new { email = email } },
+                        subject = $"Pedido #{pedidoId} confirmado!"
+                    }
+                },
+                from = new { email = "contato@contosopizza.com", name = "ContosoPizza" },
+                content = new[]
+                {
+                    new
+                    {
+                        type = "text/html",
+                        value = $@"
+                            <h1>🍕 Pedido Confirmado!</h1>
+                            <p>Olá {nomeCliente}, seu pedido <strong>#{pedidoId}</strong> foi recebido!</p>
+                            <p><strong>Total:</strong> R$ {total:F2}</p>
+                            <p>Acesse: <a href='https://contoso-pizza-api.onrender.com/Home/AdminPedidos'>Acompanhar pedido</a></p>
+                        "
+                    }
+                }
+            };
             
-            return response.IsSuccessStatusCode;
+            var json = JsonSerializer.Serialize(content);
+            var response = await client.PostAsync("https://api.sendgrid.com/v3/mail/send", 
+                new StringContent(json, Encoding.UTF8, "application/json"));
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"✅ E-mail enviado para {email}");
+                return true;
+            }
+            
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"❌ Erro SendGrid: {error}");
+            return false;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
+            Console.WriteLine($"❌ Erro ao enviar e-mail: {ex.Message}");
             return false;
         }
     }

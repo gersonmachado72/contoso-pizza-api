@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=contosopizza.db"));
 
 builder.Services.AddScoped<PedidoService>();
+builder.Services.AddScoped<EmailService>();
 
 // 🔐 Configurar autenticação por cookie (sem Identity)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
