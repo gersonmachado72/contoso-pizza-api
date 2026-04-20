@@ -41,7 +41,7 @@ public class EmailService
                         subject = $"Pedido #{pedidoId} confirmado!"
                     }
                 },
-                from = new { email = "contato@contosopizza.com", name = "ContosoPizza" },
+                from = new { email = "todas.pizza@gmail.com", name = "ContosoPizza" },
                 content = new[]
                 {
                     new
