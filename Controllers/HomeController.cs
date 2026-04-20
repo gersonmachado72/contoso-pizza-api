@@ -161,7 +161,15 @@ public class HomeController : Controller
 
         return View("PedidoConfirmado", pedido);
     }
-}
+
+    [Authorize]
+    public IActionResult DownloadRelatorio()
+    {
+        var pedidos = _pedidoService.GetAll();
+        var bytes = RelatorioService.GerarRelatorioVendasCSV(pedidos);
+        return File(bytes, "text/csv", $"relatorio_pedidos_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+    }
+} 
 
 public class PedidoViewModel
 {
