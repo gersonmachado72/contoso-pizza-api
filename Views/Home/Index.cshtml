@@ -24,7 +24,6 @@
     </style>
 </head>
 <body>
-    <div class="background-blur"></div>
     <header class="main-header">
         <h1>🍕 ContosoPizza</h1>
         <p>Qualidade que dá gosto!</p>
@@ -37,15 +36,19 @@
         <h2>📝 Faça seu Pedido</h2>
         <div class="form-group">
             <label>Nome completo:</label>
-            <input type="text" id="nomeCliente" class="form-control" placeholder="Seu nome">
+            <input type="text" id="nomeCliente" class="form-control" placeholder="Seu nome" required>
         </div>
         <div class="form-group">
             <label>Endereço para entrega:</label>
-            <input type="text" id="endereco" class="form-control" placeholder="Rua, número, bairro">
+            <input type="text" id="endereco" class="form-control" placeholder="Rua, número, bairro" required>
         </div>
         <div class="form-group">
             <label>Telefone:</label>
-            <input type="tel" id="telefone" class="form-control" placeholder="(00) 00000-0000">
+            <input type="tel" id="telefone" class="form-control" placeholder="(00) 00000-0000" required>
+        </div>
+        <div class="form-group">
+            <label>E-mail para confirmação:</label>
+            <input type="email" id="email" class="form-control" placeholder="seuemail@exemplo.com" required>
         </div>
         <div class="form-group">
             <label>Observações (opcional):</label>
@@ -125,19 +128,21 @@
             const nomeCliente = document.getElementById('nomeCliente').value.trim();
             const endereco = document.getElementById('endereco').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
+            const email = document.getElementById('email').value.trim();
 
-            if (!nomeCliente || !endereco || !telefone) {
-                alert("Preencha nome, endereço e telefone!");
+            if (!nomeCliente || !endereco || !telefone || !email) {
+                alert("Preencha nome, endereço, telefone e e-mail!");
                 return;
             }
 
             const pedido = {
-                nomeCliente,
-                endereco,
-                telefone,
+                nomeCliente: nomeCliente,
+                endereco: endereco,
+                telefone: telefone,
+                email: email,
                 observacao: document.getElementById('observacao').value,
                 metodoPagamento: selectedPayment,
-                itens
+                itens: itens
             };
 
             try {
@@ -182,6 +187,5 @@
         document.getElementById('btnFinalizarPedido').addEventListener('click', finalizarPedido);
         carregarCardapio();
     </script>
-<script src="/js/whatsapp.js" data-number="@Environment.GetEnvironmentVariable("WhatsAppNumber")"></script>
 </body>
 </html>
