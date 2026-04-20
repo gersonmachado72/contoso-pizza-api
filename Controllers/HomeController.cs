@@ -173,3 +173,19 @@ public class ItemPedidoVM
     public string? Tamanho { get; set; }
     public int Quantidade { get; set; }
 }
+
+    // Página pública para rastrear pedido (sem autenticação)
+    [HttpGet]
+    public IActionResult RastrearPedido(int? id, string? email)
+    {
+        if (id.HasValue && !string.IsNullOrEmpty(email))
+        {
+            var pedido = _pedidoService.Get(id.Value);
+            if (pedido != null && pedido.Email == email)
+            {
+                return View(pedido);
+            }
+            ViewBag.Error = "Pedido não encontrado ou e-mail incorreto.";
+        }
+        return View();
+    }

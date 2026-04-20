@@ -1,0 +1,140 @@
+@model ContosoPizza.Models.Pedido
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhar Pedido - ContosoPizza</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .rastreio-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .status-pipeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .status-step {
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
+        }
+        .status-step .circle {
+            width: 50px;
+            height: 50px;
+            background: #ddd;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .status-step.active .circle {
+            background: #e67e22;
+            color: white;
+        }
+        .status-step.completed .circle {
+            background: #27ae60;
+            color: white;
+        }
+        .status-step .label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .status-step.active .label {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        .btn-voltar {
+            display: inline-block;
+            background: #e67e22;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .error { color: red; text-align: center; margin: 20px 0; }
+        .form-group { margin-bottom: 15px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-enviar { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="background-blur"></div>
+    <div class="rastreio-container">
+        <h1 style="text-align:center;">🍕 Acompanhar Pedido</h1>
+        
+        @if (ViewBag.Error != null)
+        {
+            <div class="error">@ViewBag.Error</div>
+        }
+        
+        @if (Model == null)
+        {
+            <form method="get" action="/Home/RastrearPedido">
+                <div class="form-group">
+                    <label>Número do Pedido:</label>
+                    <input type="number" name="id" class="form-control" placeholder="Ex: 123" required>
+                </div>
+                <div class="form-group">
+                    <label>Seu e-mail:</label>
+                    <input type="email" name="email" class="form-control" placeholder="email@exemplo.com" required>
+                </div>
+                <button type="submit" class="btn-enviar">Consultar Pedido</button>
+            </form>
+        }
+        else
+        {
+            <div class="pedido-info">
+                <p><strong>Pedido #@Model.Id</strong></p>
+                <p><strong>Cliente:</strong> @Model.NomeCliente</p>
+                <p><strong>Total:</strong> R$ @Model.ValorTotal.ToString("F2")</p>
+                
+                <div class="status-pipeline">
+                    <div class="status-step @(Model.Status == "Preparando" ? "active" : (Model.Status == "Saiu para entrega" || Model.Status == "Finalizado" ? "completed" : ""))">
+                        <div class="circle">🔧</div>
+                        <div class="label">Preparando</div>
+                    </div>
+                    <div class="status-step @(Model.Status == "Saiu para entrega" ? "active" : (Model.Status == "Finalizado" ? "completed" : ""))">
+                        <div class="circle">🚚</div>
+                        <div class="label">Saiu para entrega</div>
+                    </div>
+                    <div class="status-step @(Model.Status == "Finalizado" ? "active completed" : "")">
+                        <div class="circle">✅</div>
+                        <div class="label">Finalizado</div>
+                    </div>
+                </div>
+                
+                @if (Model.Status == "Finalizado")
+                {
+                    <p style="text-align:center; color:#27ae60;">✅ Seu pedido foi entregue! Obrigado!</p>
+                }
+                else if (Model.Status == "Saiu para entrega")
+                {
+                    <p style="text-align:center; color:#3498db;">🚚 Seu pedido saiu para entrega!</p>
+                }
+                else
+                {
+                    <p style="text-align:center; color:#e67e22;">🔧 Seu pedido está sendo preparado!</p>
+                }
+            </div>
+        }
+        
+        <div style="text-align:center;">
+            <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
+        </div>
+    </div>
+</body>
+</html>
