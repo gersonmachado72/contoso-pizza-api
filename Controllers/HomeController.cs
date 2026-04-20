@@ -131,7 +131,7 @@ public class HomeController : Controller
         pedido.ValorTotal = total;
         _pedidoService.Add(pedido);
         
-        // Enviar e-mail em background (não trava o fluxo)
+        // Enviar e-mail em background
         _ = Task.Run(async () =>
         {
             try
@@ -154,6 +154,22 @@ public class HomeController : Controller
         var bytes = RelatorioService.GerarRelatorioVendasCSV(pedidos);
         return File(bytes, "text/csv", $"relatorio_pedidos_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
     }
+
+    // 🔥 Página pública para rastrear pedido (sem autenticação)
+    [HttpGet]
+    public IActionResult RastrearPedido(int? id, string? email)
+    {
+        if (id.HasValue && !string.IsNullOrEmpty(email))
+        {
+            var pedido = _pedidoService.Get(id.Value);
+            if (pedido != null && pedido.Email == email)
+            {
+                return View(pedido);
+            }
+            ViewBag.Error = "Pedido não encontrado ou e-mail incorreto.";
+        }
+        return View();
+    }
 }
 
 public class PedidoViewModel
@@ -173,19 +189,3 @@ public class ItemPedidoVM
     public string? Tamanho { get; set; }
     public int Quantidade { get; set; }
 }
-
-    // Página pública para rastrear pedido (sem autenticação)
-    [HttpGet]
-    public IActionResult RastrearPedido(int? id, string? email)
-    {
-        if (id.HasValue && !string.IsNullOrEmpty(email))
-        {
-            var pedido = _pedidoService.Get(id.Value);
-            if (pedido != null && pedido.Email == email)
-            {
-                return View(pedido);
-            }
-            ViewBag.Error = "Pedido não encontrado ou e-mail incorreto.";
-        }
-        return View();
-    }
