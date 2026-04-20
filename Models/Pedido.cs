@@ -18,6 +18,7 @@ public class Pedido
     [Required]
     [Phone]
     public string? Telefone { get; set; }
+    public string? Email { get; set; }
     
     public DateTime DataPedido { get; set; }
     public string? Status { get; set; }
