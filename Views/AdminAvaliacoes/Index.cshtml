@@ -31,7 +31,7 @@
         <div class="header-admin">
             <a href="/Home/AdminPedidos" class="btn-voltar">← Voltar para Pedidos</a>
             <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
-            <a href="/Admin/Avaliacoes/ExportarCSV" class="btn-csv">📥 Baixar Relatório CSV</a>
+            <a href="/AdminAvaliacoes/ExportarCSV" class="btn-csv">📥 Baixar Relatório CSV</a>
         </div>
         <h1>⭐ Gerenciamento de Avaliações</h1>
         <p>Total de avaliações: @Model.Count</p>
@@ -88,12 +88,14 @@
                             <td>
                                 @if (!av.Aprovado)
                                 {
-                                    <form method="post" action="/Admin/Avaliacoes/Aprovar/@av.Id" style="display:inline;">
+                                    <form method="post" action="/AdminAvaliacoes/Aprovar/@av.Id" style="display:inline;">
+                                        @Html.AntiForgeryToken()
                                         <button type="submit" class="btn-aprovar">Aprovar</button>
                                     </form>
                                 }
-                                <form method="post" action="/Admin/Avaliacoes/Excluir/@av.Id" style="display:inline;">
-                                    <button type="submit" class="btn-excluir" onclick="return confirm('Excluir esta avaliação?')">Excluir</button>
+                                <form method="post" action="/AdminAvaliacoes/Excluir/@av.Id" style="display:inline;" onsubmit="return confirm('Excluir esta avaliação?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-excluir">Excluir</button>
                                 </form>
                             </td>
                         </tr>
