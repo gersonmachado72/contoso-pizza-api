@@ -8,7 +8,6 @@ using ContosoPizza.Services;
 namespace ContosoPizza.Controllers;
 
 [Authorize] // 🔒 Apenas admin pode acessar
-[Route("Admin/[controller]")]
 public class AdminAvaliacoesController : Controller
 {
     private readonly AppDbContext _context;
@@ -19,7 +18,6 @@ public class AdminAvaliacoesController : Controller
     }
 
     // Listar todas as avaliações
-    [HttpGet]
     public async Task<IActionResult> Index()
     {
         var avaliacoes = await _context.Avaliacoes
