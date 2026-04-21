@@ -6,7 +6,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Acompanhar Pedido - ContosoPizza</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
@@ -69,6 +69,30 @@
         .form-group { margin-bottom: 15px; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
         .btn-enviar { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; width: 100%; }
+        
+        /* Estilos para avaliação */
+        .avaliacao-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .star {
+            font-size: 30px;
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.2s;
+            display: inline-block;
+        }
+        .star.selected {
+            color: #f39c12;
+        }
+        .avaliacao-enviada {
+            color: #27ae60;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +144,24 @@
                 @if (Model.Status == "Finalizado")
                 {
                     <p style="text-align:center; color:#27ae60;">✅ Seu pedido foi entregue! Obrigado!</p>
+                    
+                    <!-- 🔥 SEÇÃO DE AVALIAÇÃO (aparece apenas quando entregue) -->
+                    <div class="avaliacao-section" id="avaliacaoSection">
+                        <h3>⭐ Avalie seu pedido</h3>
+                        <p>Sua opinião é muito importante para nós!</p>
+                        <div class="rating">
+                            <span class="star" data-value="1">☆</span>
+                            <span class="star" data-value="2">☆</span>
+                            <span class="star" data-value="3">☆</span>
+                            <span class="star" data-value="4">☆</span>
+                            <span class="star" data-value="5">☆</span>
+                        </div>
+                        <textarea id="comentario" placeholder="Deixe seu comentário (opcional)" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:1px solid #ddd;"></textarea>
+                        <button id="enviarAvaliacao" style="margin-top:15px; background:#e67e22; color:white; border:none; padding:10px 20px; border-radius:25px; cursor:pointer;">Enviar Avaliação</button>
+                    </div>
+                    <div id="avaliacaoSucesso" class="avaliacao-enviada" style="display:none;">
+                        ⭐ Obrigado pela sua avaliação!
+                    </div>
                 }
                 else if (Model.Status == "Saiu para entrega")
                 {
@@ -136,5 +178,64 @@
             <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
         </div>
     </div>
+
+    <script>
+        let selectedRating = 0;
+        
+        // Inicializar estrelas se existirem
+        const stars = document.querySelectorAll('.star');
+        if (stars.length > 0) {
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.value);
+                    stars.forEach(s => {
+                        if (parseInt(s.dataset.value) <= selectedRating) {
+                            s.textContent = '★';
+                            s.classList.add('selected');
+                        } else {
+                            s.textContent = '☆';
+                            s.classList.remove('selected');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Enviar avaliação
+        const enviarBtn = document.getElementById('enviarAvaliacao');
+        if (enviarBtn) {
+            enviarBtn.addEventListener('click', async function() {
+                if (selectedRating === 0) {
+                    alert('Selecione uma nota (1 a 5 estrelas)!');
+                    return;
+                }
+                
+                const avaliacao = {
+                    pedidoId: @Model?.Id,
+                    nota: selectedRating,
+                    comentario: document.getElementById('comentario').value,
+                    clienteNome: '@Model?.NomeCliente'
+                };
+                
+                try {
+                    const res = await fetch('/api/Avaliacao', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(avaliacao)
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('avaliacaoSection').style.display = 'none';
+                        document.getElementById('avaliacaoSucesso').style.display = 'block';
+                    } else {
+                        alert('Erro ao enviar avaliação. Tente novamente.');
+                    }
+                } catch (err) {
+                    alert('Erro de conexão. Tente novamente.');
+                }
+            });
+        }
+    </script>
 </body>
 </html>
