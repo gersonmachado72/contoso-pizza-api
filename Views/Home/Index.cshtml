@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .pizzas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-        .pizza-card { border: 1px solid #ddd; border-radius: 12px; padding: 15px; text-align: center; background: white; }
+        .pizza-card { border: 1px solid #ddd; border-radius: 12px; padding: 15px; text-align: center; background: white; transition: transform 0.3s; }
+        .pizza-card:hover { transform: translateY(-5px); }
+        .pizza-img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; }
         .price { color: #e67e22; font-size: 1.3rem; font-weight: bold; }
         .btn-adicionar { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; margin: 10px 0; }
         .btn-enviar { background: #e67e22; color: white; border: none; padding: 12px 30px; border-radius: 30px; cursor: pointer; margin-top: 20px; }
@@ -173,7 +175,7 @@
                 pizzas = await res.json();
                 container.innerHTML = pizzas.map(p => `
                     <div class="pizza-card">
-                @if (!string.IsNullOrEmpty(pizza.ImageUrl)) { <img src="@pizza.ImageUrl" class="pizza-img" alt="@pizza.Name" style="width:100%; height:120px; object-fit:cover; border-radius:12px; margin-bottom:10px;"> } else { <div class="pizza-img" style="width:100%; height:120px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; border-radius:12px; margin-bottom:10px;">🍕</div> }
+                        ${p.imageUrl ? `<img src="${p.imageUrl}" class="pizza-img" alt="${p.name}">` : '<div class="pizza-img">🍕</div>'}
                         <h3>${p.name}</h3>
                         <div class="price">R$ ${p.price.toFixed(2)}</div>
                         <div>${p.isVegetarian ? '🌱 Vegetariana' : '🍖 Tradicional'}</div>
