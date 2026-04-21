@@ -8,6 +8,7 @@ using ContosoPizza.Services;
 namespace ContosoPizza.Controllers;
 
 [Authorize] // 🔒 Apenas admin pode acessar
+[Route("AdminAvaliacoes")] // 🔥 ROTA BASE CORRETA
 public class AdminAvaliacoesController : Controller
 {
     private readonly AppDbContext _context;
@@ -18,6 +19,7 @@ public class AdminAvaliacoesController : Controller
     }
 
     // Listar todas as avaliações
+    [HttpGet("")] // Rota: /AdminAvaliacoes
     public async Task<IActionResult> Index()
     {
         var avaliacoes = await _context.Avaliacoes
@@ -27,7 +29,7 @@ public class AdminAvaliacoesController : Controller
     }
 
     // Aprovar avaliação
-    [HttpPost("Aprovar/{id}")]
+    [HttpPost("Aprovar/{id}")] // Rota: /AdminAvaliacoes/Aprovar/2
     public async Task<IActionResult> Aprovar(int id)
     {
         var avaliacao = await _context.Avaliacoes.FindAsync(id);
@@ -41,7 +43,7 @@ public class AdminAvaliacoesController : Controller
     }
 
     // Excluir avaliação
-    [HttpPost("Excluir/{id}")]
+    [HttpPost("Excluir/{id}")] // Rota: /AdminAvaliacoes/Excluir/2
     public async Task<IActionResult> Excluir(int id)
     {
         var avaliacao = await _context.Avaliacoes.FindAsync(id);
@@ -55,7 +57,7 @@ public class AdminAvaliacoesController : Controller
     }
 
     // Exportar relatório CSV
-    [HttpGet("ExportarCSV")]
+    [HttpGet("ExportarCSV")] // Rota: /AdminAvaliacoes/ExportarCSV
     public IActionResult ExportarCSV()
     {
         var avaliacoes = _context.Avaliacoes.ToList();
