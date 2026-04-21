@@ -1,0 +1,106 @@
+@model List<ContosoPizza.Models.Avaliacao>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Avaliações</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .btn-voltar { background: #e67e22; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
+        .btn-csv { background: #27ae60; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #e67e22; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .aprovado { color: #27ae60; font-weight: bold; }
+        .pendente { color: #e74c3c; font-weight: bold; }
+        .btn-aprovar { background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 15px; cursor: pointer; }
+        .btn-excluir { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 15px; cursor: pointer; }
+        .estrelas { color: #f39c12; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+    <div class="background-blur"></div>
+    <div class="container">
+        <div class="header-admin">
+            <a href="/Home/AdminPedidos" class="btn-voltar">← Voltar para Pedidos</a>
+            <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
+            <a href="/Admin/Avaliacoes/ExportarCSV" class="btn-csv">📥 Baixar Relatório CSV</a>
+        </div>
+        <h1>⭐ Gerenciamento de Avaliações</h1>
+        <p>Total de avaliações: @Model.Count</p>
+        
+        @if (!Model.Any())
+        {
+            <p>Nenhuma avaliação recebida ainda.</p>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pedido #</th>
+                        <th>Cliente</th>
+                        <th>Nota</th>
+                        <th>Comentário</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var av in Model)
+                    {
+                        <tr>
+                            <td>@av.PedidoId</td>
+                            <td>@av.ClienteNome</td>
+                            <td class="estrelas">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= av.Nota)
+                                    {
+                                        <text>★</text>
+                                    }
+                                    else
+                                    {
+                                        <text>☆</text>
+                                    }
+                                }
+                            </td>
+                            <td>@(string.IsNullOrEmpty(av.Comentario) ? "-" : av.Comentario)</td>
+                            <td>@av.DataAvaliacao.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (av.Aprovado)
+                                {
+                                    <span class="aprovado">✅ Aprovada</span>
+                                }
+                                else
+                                {
+                                    <span class="pendente">⏳ Pendente</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!av.Aprovado)
+                                {
+                                    <form method="post" action="/Admin/Avaliacoes/Aprovar/@av.Id" style="display:inline;">
+                                        <button type="submit" class="btn-aprovar">Aprovar</button>
+                                    </form>
+                                }
+                                <form method="post" action="/Admin/Avaliacoes/Excluir/@av.Id" style="display:inline;">
+                                    <button type="submit" class="btn-excluir" onclick="return confirm('Excluir esta avaliação?')">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</body>
+</html>
