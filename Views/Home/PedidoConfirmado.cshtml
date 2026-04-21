@@ -67,10 +67,10 @@
             <h3>💰 Valor Total: R$ @(Model?.ValorTotal.ToString("F2") ?? "0,00")</h3>
         </div>
         
-        <p>⏱️ Acompanhe seu pedido pelo número #@(Model?.Id ?? 0)</p>
+        <p>⏱️ Acompanhe seu pedido pelo número @Model?.Id</p>
         
         <a href="/Home/Index" class="btn-voltar">← Voltar ao Cardápio</a>
-        <a href="/Home/RastrearPedido?id=@Model?.Id/Home/AdminPedidosemail=@Model?.Email" class="btn-admin">📊 Acompanhar Pedidos</a>
+        <a href="/Home/RastrearPedido?id=@Model?.Id&email=@Model?.Email" class="btn-admin">📊 Acompanhar Pedido</a>
     </div>
 <script src="/js/whatsapp.js" data-number="@Environment.GetEnvironmentVariable("WhatsAppNumber")"></script>
 </body>
