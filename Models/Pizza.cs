@@ -13,4 +13,5 @@ public class Pizza
     public decimal Price { get; set; }
 
     public bool IsVegetarian { get; set; }
+    public string? ImageUrl { get; set; }
 }

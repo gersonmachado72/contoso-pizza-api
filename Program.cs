@@ -16,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<CloudinaryService>();
 
 // 🔐 Configurar autenticação por cookie (sem Identity)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

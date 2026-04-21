@@ -173,7 +173,6 @@
                 pizzas = await res.json();
                 container.innerHTML = pizzas.map(p => `
                     <div class="pizza-card">
-                @if (!string.IsNullOrEmpty(pizza.ImageUrl)) { <img src="@pizza.ImageUrl" class="pizza-img" alt="@pizza.Name" style="width:100%; height:120px; object-fit:cover; border-radius:12px; margin-bottom:10px;"> } else { <div class="pizza-img" style="width:100%; height:120px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; border-radius:12px; margin-bottom:10px;">🍕</div> }
                         <h3>${p.name}</h3>
                         <div class="price">R$ ${p.price.toFixed(2)}</div>
                         <div>${p.isVegetarian ? '🌱 Vegetariana' : '🍖 Tradicional'}</div>
