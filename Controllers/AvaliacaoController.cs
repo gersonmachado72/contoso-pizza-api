@@ -35,7 +35,7 @@ public class AvaliacaoController : ControllerBase
             return BadRequest(new { error = "Nota deve ser entre 1 e 5" });
         }
         
-        avaliacao.DataAvaliacao = DateTime.Now;
+        avaliacao.DataAvaliacao = DateTime.UtcNow;
         avaliacao.Aprovado = false;
         
         _context.Avaliacoes.Add(avaliacao);

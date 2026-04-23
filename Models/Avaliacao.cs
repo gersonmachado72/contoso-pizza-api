@@ -17,6 +17,6 @@ public class Avaliacao
     public string? Comentario { get; set; }
     
     public string? ClienteNome { get; set; }
-    public DateTime DataAvaliacao { get; set; } = DateTime.Now;
+    public DateTime DataAvaliacao { get; set; } = DateTime.UtcNow;
     public bool Aprovado { get; set; } = false;
 }

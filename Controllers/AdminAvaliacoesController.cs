@@ -62,6 +62,6 @@ public class AdminAvaliacoesController : Controller
     {
         var avaliacoes = _context.Avaliacoes.ToList();
         var bytes = RelatorioAvaliacoesService.GerarRelatorioAvaliacoesCSV(avaliacoes);
-        return File(bytes, "text/csv", $"avaliacoes_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        return File(bytes, "text/csv", $"avaliacoes_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
     }
 }
