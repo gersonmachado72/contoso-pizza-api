@@ -10,13 +10,26 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// 🔥 CONFIGURAÇÃO DO BANCO DE DADOS
+// 🔥 CONFIGURAÇÃO DO POSTGRESQL COM FORMATO CORRETO
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     Console.WriteLine("=== USANDO POSTGRESQL ===");
+    
+    // Converter DATABASE_URL do formato URL para formato Npgsql
+    // Exemplo de entrada: postgresql://usuario:senha@host:5432/database?sslmode=require
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo[1];
+    var database = uri.AbsolutePath.TrimStart('/');
+    
+    // Formato correto para Npgsql: Host=...;Port=...;Database=...;Username=...;Password=...;SSL Mode=Require
+    var connectionString = $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    
+    Console.WriteLine($"✅ Conectando ao PostgreSQL: {uri.Host}");
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(databaseUrl));
+        options.UseNpgsql(connectionString));
 }
 else
 {
@@ -25,12 +38,12 @@ else
         options.UseSqlite("Data Source=contosopizza.db"));
 }
 
-// 🔥 REGISTRAR SERVIÇOS
+// Registrar serviços
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CloudinaryService>();
 
-// 🔥 AUTENTICAÇÃO
+// Autenticação
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -44,23 +57,13 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// 🔥 MIGRAÇÕES E DADOS INICIAIS
+// Inicializar banco de dados
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
-    
-    // Inicializar PizzaService com o DbContext
     PizzaService.Initialize(db);
-    
-    // Verificar se há pizzas, se não houver, adicionar as padrão
-    if (!db.Pizzas.Any())
-    {
-        Console.WriteLine("⚠️ Nenhuma pizza encontrada. Adicionando pizzas padrão...");
-        db.Pizzas.AddRange(PizzaService.GetPizzasPadrao());
-        db.SaveChanges();
-        Console.WriteLine("✅ Pizzas padrão adicionadas!");
-    }
+    Console.WriteLine("✅ Banco de dados verificado/criado");
 }
 
 if (app.Environment.IsDevelopment())
@@ -79,14 +82,3 @@ app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-// Garantir que a coluna ImageUrl existe em todas as execuções
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
-    {
-        db.Database.ExecuteSqlRaw("ALTER TABLE Pizzas ADD COLUMN ImageUrl TEXT;");
-    }
-    catch { /* Coluna já existe, ignorar erro */ }
-}
