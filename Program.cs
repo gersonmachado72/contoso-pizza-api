@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ContosoPizza.Data;
 using ContosoPizza.Services;
+using ContosoPizza.Models;  // 🔥 IMPORTANTE: Adicionar this!
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// 🔥 INICIALIZAR BANCO E ADICIONAR PIZZAS PADRÃO
+// Inicializar banco e adicionar pizzas padrão
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
