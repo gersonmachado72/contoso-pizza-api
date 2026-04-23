@@ -10,24 +10,24 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// 🔥 CONFIGURAÇÃO DO POSTGRESQL COM FORMATO CORRETO
+// 🔥 CONFIGURAÇÃO DO BANCO DE DADOS (Corrigida)
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     Console.WriteLine("=== USANDO POSTGRESQL ===");
     
-    // Converter DATABASE_URL do formato URL para formato Npgsql
-    // Exemplo de entrada: postgresql://usuario:senha@host:5432/database?sslmode=require
+    // Converter DATABASE_URL do formato URL para formato Npgsql (chave=valor)
+    // Exemplo de entrada: postgresql://usuario:senha@host:porta/database?sslmode=require
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
     var username = userInfo[0];
     var password = userInfo[1];
     var database = uri.AbsolutePath.TrimStart('/');
     
-    // Formato correto para Npgsql: Host=...;Port=...;Database=...;Username=...;Password=...;SSL Mode=Require
+    // Formato correto para Npgsql
     var connectionString = $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
     
-    Console.WriteLine($"✅ Conectando ao PostgreSQL: {uri.Host}");
+    Console.WriteLine($"✅ Conectando ao PostgreSQL em: {uri.Host}");
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
 }
