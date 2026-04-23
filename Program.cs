@@ -10,15 +10,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 
-// Banco de dados SQLite
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=contosopizza.db"));
+// 🔥 CONFIGURAÇÃO DO BANCO DE DADOS
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    Console.WriteLine("=== USANDO POSTGRESQL ===");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(databaseUrl));
+}
+else
+{
+    Console.WriteLine("=== USANDO SQLITE LOCAL ===");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite("Data Source=contosopizza.db"));
+}
 
+// 🔥 REGISTRAR SERVIÇOS
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CloudinaryService>();
+builder.Services.AddScoped<PagamentoService>();
 
-// 🔐 Configurar autenticação por cookie (sem Identity)
+// 🔥 AUTENTICAÇÃO
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -26,18 +39,29 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Home/Logout";
         options.AccessDeniedPath = "/Home/AcessoNegado";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
-        options.SlidingExpiration = true;
     });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// 🔥 MIGRAÇÕES E DADOS INICIAIS
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
-    Console.WriteLine("✅ Banco SQLite criado/verificado");
+    
+    // Inicializar PizzaService com o DbContext
+    PizzaService.Initialize(db);
+    
+    // Verificar se há pizzas, se não houver, adicionar as padrão
+    if (!db.Pizzas.Any())
+    {
+        Console.WriteLine("⚠️ Nenhuma pizza encontrada. Adicionando pizzas padrão...");
+        db.Pizzas.AddRange(PizzaService.GetPizzasPadrao());
+        db.SaveChanges();
+        Console.WriteLine("✅ Pizzas padrão adicionadas!");
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -49,7 +73,6 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 
-// 🔐 IMPORTANTE: Ordem correta
 app.UseAuthentication();
 app.UseAuthorization();
 
