@@ -34,9 +34,9 @@ else
 }
 
 builder.Services.AddScoped<PedidoService>();
-builder.Services.AddScoped<PizzaService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CloudinaryService>();
+builder.Services.AddScoped<PizzaService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -51,17 +51,15 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Inicializar banco e serviços
+// Inicializar banco de dados
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
     
-    // 🔥 INICIALIZAR PIZZASERVICE ANTES DE USAR
-    
     if (!db.Pizzas.Any())
     {
-        Console.WriteLine("⚠️ Nenhuma pizza encontrada. Adicionando pizzas padrão...");
+        Console.WriteLine("⚠️ Adicionando pizzas padrão...");
         var pizzasPadrao = new List<Pizza>
         {
             new Pizza { Name = "Margherita", Price = 9.99M, IsVegetarian = true },
