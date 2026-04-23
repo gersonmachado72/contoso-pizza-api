@@ -12,11 +12,13 @@ public class HomeController : Controller
 {
     private readonly PedidoService _pedidoService;
     private readonly EmailService _emailService;
+    private readonly PizzaService _pizzaService;
 
-    public HomeController(PedidoService pedidoService, EmailService emailService)
+    public HomeController(PedidoService pedidoService, EmailService emailService, PizzaService pizzaService)
     {
         _pedidoService = pedidoService;
         _emailService = emailService;
+        _pizzaService = pizzaService;
     }
 
     public IActionResult Index() => View();
@@ -106,12 +108,13 @@ public class HomeController : Controller
         };
         
         decimal total = 0;
+        var pizzas = _pizzaService.GetAll();
         if (pedidoVM.Itens != null)
         {
             foreach (var item in pedidoVM.Itens)
             {
                 decimal precoBase = 0;
-                var pizza = PizzaService.GetAll().FirstOrDefault(p => p.Name == item.Sabor);
+                var pizza = pizzas.FirstOrDefault(p => p.Name == item.Sabor);
                 if (pizza != null)
                 {
                     precoBase = pizza.Price;
@@ -131,17 +134,13 @@ public class HomeController : Controller
         pedido.ValorTotal = total;
         _pedidoService.Add(pedido);
         
-        // Enviar e-mail em background
         _ = Task.Run(async () =>
         {
             try
             {
                 await _emailService.EnviarConfirmacaoPedido(pedidoVM.Email, pedidoVM.NomeCliente, pedido.Id, pedido.ValorTotal);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro no envio de e-mail: {ex.Message}");
-            }
+            catch { }
         });
         
         return View("PedidoConfirmado", pedido);
@@ -155,7 +154,6 @@ public class HomeController : Controller
         return File(bytes, "text/csv", $"relatorio_pedidos_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
     }
 
-    // 🔥 Página pública para rastrear pedido (sem autenticação)
     [HttpGet]
     public IActionResult RastrearPedido(int? id, string? email)
     {

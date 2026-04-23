@@ -34,6 +34,7 @@ else
 }
 
 builder.Services.AddScoped<PedidoService>();
+builder.Services.AddScoped<PizzaService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CloudinaryService>();
 
@@ -57,7 +58,6 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
     
     // 🔥 INICIALIZAR PIZZASERVICE ANTES DE USAR
-    PizzaService.Initialize(db);
     
     if (!db.Pizzas.Any())
     {

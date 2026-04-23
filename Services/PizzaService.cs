@@ -4,65 +4,40 @@ using ContosoPizza.Models;
 
 namespace ContosoPizza.Services;
 
-public static class PizzaService
+public class PizzaService
 {
-    private static AppDbContext? _context;
+    private readonly AppDbContext _context;
 
-    public static void Initialize(AppDbContext context)
+    public PizzaService(AppDbContext context)
     {
         _context = context;
     }
 
-    public static List<Pizza> GetPizzasPadrao()
+    public List<Pizza> GetAll()
     {
-        return new List<Pizza>
-        {
-            new Pizza { Id = 1, Name = "Margherita", Price = 9.99M, IsVegetarian = true },
-            new Pizza { Id = 2, Name = "Pepperoni", Price = 12.99M, IsVegetarian = false },
-            new Pizza { Id = 3, Name = "Quattro Formaggi", Price = 14.99M, IsVegetarian = true },
-            new Pizza { Id = 4, Name = "Calabresa", Price = 11.99M, IsVegetarian = false },
-            new Pizza { Id = 5, Name = "Portuguesa", Price = 13.99M, IsVegetarian = false },
-            new Pizza { Id = 6, Name = "Frango com Catupiry", Price = 14.99M, IsVegetarian = false },
-            new Pizza { Id = 7, Name = "Vegetariana Especial", Price = 15.99M, IsVegetarian = true },
-            new Pizza { Id = 8, Name = "Napolitana", Price = 12.99M, IsVegetarian = true },
-            new Pizza { Id = 9, Name = "Mexicana", Price = 13.99M, IsVegetarian = false },
-            new Pizza { Id = 10, Name = "Chocolate", Price = 18.99M, IsVegetarian = true }
-        };
+        return _context.Pizzas.ToList();
     }
 
-    public static List<Pizza> GetAll()
+    public Pizza? Get(int id)
     {
-        if (_context == null) return new List<Pizza>();
-        var pizzas = _context.Pizzas.ToList();
-        
-        // Se não houver pizzas, retorna lista vazia (o Program.cs vai adicionar as padrão)
-        return pizzas;
-    }
-
-    public static Pizza? Get(int id)
-    {
-        if (_context == null) return null;
         return _context.Pizzas.Find(id);
     }
 
-    public static void Add(Pizza pizza)
+    public void Add(Pizza pizza)
     {
-        if (_context == null) return;
         pizza.Id = 0;
         _context.Pizzas.Add(pizza);
         _context.SaveChanges();
     }
 
-    public static void Update(Pizza pizza)
+    public void Update(Pizza pizza)
     {
-        if (_context == null) return;
         _context.Pizzas.Update(pizza);
         _context.SaveChanges();
     }
 
-    public static void Delete(int id)
+    public void Delete(int id)
     {
-        if (_context == null) return;
         var pizza = Get(id);
         if (pizza != null)
         {
