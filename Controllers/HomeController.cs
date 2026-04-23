@@ -72,7 +72,7 @@ public class HomeController : Controller
 
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
+    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
         try
         {
@@ -86,9 +86,10 @@ public class HomeController : Controller
             pedido.Status = status;
             pedido.EntregadorNome = entregador ?? "";
             pedido.PagamentoConfirmado = pagamentoConfirmado;
+            
             if (status == "Finalizado")
             {
-                pedido.DataEntrega = DateTime.Now;
+                pedido.DataEntrega = DateTime.UtcNow; // 🔥 USAR UTC
             }
             
             _pedidoService.Update(pedido);
@@ -97,7 +98,7 @@ public class HomeController : Controller
         catch (Exception ex)
         {
             Console.WriteLine($"Erro ao atualizar status: {ex.Message}");
-            TempData["Error"] = "Erro ao atualizar status";
+            TempData["Error"] = $"Erro ao atualizar status: {ex.Message}";
         }
         
         return RedirectToAction("AdminPedidos");
@@ -117,7 +118,7 @@ public class HomeController : Controller
             Email = pedidoVM.Email ?? "",
             Observacao = pedidoVM.Observacao ?? "",
             MetodoPagamento = pedidoVM.MetodoPagamento ?? "Dinheiro",
-            DataPedido = DateTime.Now,
+            DataPedido = DateTime.UtcNow,
             Status = "Preparando",
             PagamentoConfirmado = false,
             RestaurantId = 1,
@@ -168,7 +169,7 @@ public class HomeController : Controller
     {
         var pedidos = _pedidoService.GetAll();
         var bytes = RelatorioService.GerarRelatorioVendasCSV(pedidos);
-        return File(bytes, "text/csv", $"relatorio_pedidos_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        return File(bytes, "text/csv", $"relatorio_pedidos_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv");
     }
 
     [HttpGet]

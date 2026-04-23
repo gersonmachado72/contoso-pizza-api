@@ -30,7 +30,7 @@ public class PedidoService
 
     public void Add(Pedido pedido)
     {
-        // 🔥 CONVERTER PARA UTC
+        // Garantir que DataPedido está em UTC
         if (pedido.DataPedido.Kind != DateTimeKind.Utc)
         {
             pedido.DataPedido = DateTime.SpecifyKind(pedido.DataPedido, DateTimeKind.Utc);
@@ -42,6 +42,17 @@ public class PedidoService
 
     public void Update(Pedido pedido)
     {
+        // Garantir que DataPedido e DataEntrega estão em UTC
+        if (pedido.DataPedido.Kind != DateTimeKind.Utc)
+        {
+            pedido.DataPedido = DateTime.SpecifyKind(pedido.DataPedido, DateTimeKind.Utc);
+        }
+        
+        if (pedido.DataEntrega.HasValue && pedido.DataEntrega.Value.Kind != DateTimeKind.Utc)
+        {
+            pedido.DataEntrega = DateTime.SpecifyKind(pedido.DataEntrega.Value, DateTimeKind.Utc);
+        }
+        
         _context.Pedidos.Update(pedido);
         _context.SaveChanges();
     }
