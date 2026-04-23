@@ -66,3 +66,16 @@
 <script src="/js/whatsapp.js" data-number="@Environment.GetEnvironmentVariable("WhatsAppNumber")"></script>
 </body>
 </html>
+
+@if (TempData["Success"] != null)
+{
+    <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
+        @TempData["Error"]
+    </div>
+}

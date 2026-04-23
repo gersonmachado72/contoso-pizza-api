@@ -72,17 +72,34 @@ public class HomeController : Controller
 
     [Authorize]
     [HttpPost]
-    public IActionResult AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
+    public async Task<IActionResult> AtualizarStatus(int id, string status, string entregador, bool pagamentoConfirmado)
     {
-        var pedido = _pedidoService.Get(id);
-        if (pedido != null)
+        try
         {
+            var pedido = _pedidoService.Get(id);
+            if (pedido == null)
+            {
+                TempData["Error"] = "Pedido não encontrado";
+                return RedirectToAction("AdminPedidos");
+            }
+            
             pedido.Status = status;
-            pedido.EntregadorNome = entregador;
+            pedido.EntregadorNome = entregador ?? "";
             pedido.PagamentoConfirmado = pagamentoConfirmado;
-            if (status == "Finalizado") pedido.DataEntrega = DateTime.Now;
+            if (status == "Finalizado")
+            {
+                pedido.DataEntrega = DateTime.Now;
+            }
+            
             _pedidoService.Update(pedido);
+            TempData["Success"] = "Status atualizado com sucesso!";
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao atualizar status: {ex.Message}");
+            TempData["Error"] = "Erro ao atualizar status";
+        }
+        
         return RedirectToAction("AdminPedidos");
     }
 
