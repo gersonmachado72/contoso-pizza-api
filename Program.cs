@@ -80,3 +80,14 @@ app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+// Garantir que a coluna ImageUrl existe em todas as execuções
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE Pizzas ADD COLUMN ImageUrl TEXT;");
+    }
+    catch { /* Coluna já existe, ignorar erro */ }
+}
