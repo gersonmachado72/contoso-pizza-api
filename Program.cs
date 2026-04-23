@@ -99,11 +99,3 @@ app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-// Garantir que a coluna Email existe na tabela Pedidos
-try {
-    db.Database.ExecuteSqlRaw("ALTER TABLE \"Pedidos\" ADD COLUMN IF NOT EXISTS \"Email\" TEXT;");
-    Console.WriteLine("✅ Coluna Email verificada/criada");
-} catch (Exception ex) {
-    Console.WriteLine($"⚠️ Erro ao adicionar coluna Email: {ex.Message}");
-}
