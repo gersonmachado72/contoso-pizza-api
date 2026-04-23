@@ -82,3 +82,13 @@ app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+// Se não houver pizzas, adicionar as padrão
+var pizzaCount = db.Pizzas.Count();
+if (pizzaCount == 0)
+{
+    Console.WriteLine("⚠️ Nenhuma pizza encontrada. Adicionando pizzas padrão...");
+    db.Pizzas.AddRange(PizzaService.GetPizzasPadrao());
+    db.SaveChanges();
+    Console.WriteLine($"✅ {db.Pizzas.Count()} pizzas adicionadas!");
+}

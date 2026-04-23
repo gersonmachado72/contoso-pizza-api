@@ -33,7 +33,10 @@ public static class PizzaService
     public static List<Pizza> GetAll()
     {
         if (_context == null) return new List<Pizza>();
-        return _context.Pizzas.ToList();
+        var pizzas = _context.Pizzas.ToList();
+        
+        // Se não houver pizzas, retorna lista vazia (o Program.cs vai adicionar as padrão)
+        return pizzas;
     }
 
     public static Pizza? Get(int id)
@@ -45,7 +48,7 @@ public static class PizzaService
     public static void Add(Pizza pizza)
     {
         if (_context == null) return;
-        pizza.Id = 0; // Deixa o banco gerar o ID
+        pizza.Id = 0;
         _context.Pizzas.Add(pizza);
         _context.SaveChanges();
     }
