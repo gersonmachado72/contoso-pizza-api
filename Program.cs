@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ContosoPizza.Data;
 using ContosoPizza.Services;
-using ContosoPizza.Models;  // 🔥 IMPORTANTE: Adicionar this!
+using ContosoPizza.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,14 +50,15 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Inicializar banco e adicionar pizzas padrão
+// Inicializar banco e serviços
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    
+    // 🔥 INICIALIZAR PIZZASERVICE ANTES DE USAR
     PizzaService.Initialize(db);
     
-    // Verificar se há pizzas, se não houver, adicionar as padrão
     if (!db.Pizzas.Any())
     {
         Console.WriteLine("⚠️ Nenhuma pizza encontrada. Adicionando pizzas padrão...");
