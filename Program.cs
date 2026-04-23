@@ -29,7 +29,6 @@ else
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CloudinaryService>();
-builder.Services.AddScoped<PagamentoService>();
 
 // 🔥 AUTENTICAÇÃO
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
