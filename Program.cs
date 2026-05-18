@@ -16,15 +16,30 @@ var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     Console.WriteLine("=== USANDO POSTGRESQL ===");
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-    var username = userInfo[0];
-    var password = userInfo[1];
-    var database = uri.AbsolutePath.TrimStart('/');
-    var connectionString = $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    Console.WriteLine($"URL bruta: {databaseUrl}");
     
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
+    try
+    {
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo[0];
+        var password = userInfo.Length > 1 ? userInfo[1] : "";
+        var database = uri.AbsolutePath.TrimStart('/');
+        var port = uri.Port == -1 ? 5432 : uri.Port; // fallback
+        
+        var connectionString = $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        Console.WriteLine($"Connection string gerada (porta: {port})");
+        
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Erro ao parsear DATABASE_URL: {ex.Message}");
+        Console.WriteLine("FALLBACK: usando SQLite local");
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlite("Data Source=contosopizza.db"));
+    }
 }
 else
 {
